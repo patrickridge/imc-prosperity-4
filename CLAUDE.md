@@ -45,6 +45,17 @@ submit.sh       # Bundle for upload: ./submit.sh strategies/my_strat.py
 ./backtest.sh strategies/my_strat.py 0 --vis
 ```
 
+## Research Tools
+
+```bash
+# Visualize price/trades/LOB for a day
+python3 research/visualize.py -1        # day -1, round 0
+python3 research/visualize.py -2 1      # day -2, round 1
+
+# Trade impact analysis
+python3 research/trade_impact.py -1     # day -1, round 0
+```
+
 ## Strategy Development Workflow
 
 1. Copy `strategies/example.py` to start a new strategy

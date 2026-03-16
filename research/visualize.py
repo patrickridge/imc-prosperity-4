@@ -1,6 +1,7 @@
 """
 Round data visualizer.
-Usage: python research/visualize.py <prices_csv> <trades_csv>
+Usage: python research/visualize.py <day> [round]
+Example: python research/visualize.py -1
 Output: research/plots/{product}_day_{day}.png
 """
 
@@ -10,12 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
-
-
-def load_data(prices_path, trades_path):
-    prices = pd.read_csv(prices_path, sep=";")
-    trades = pd.read_csv(trades_path, sep=";")
-    return prices, trades
+from data_finder import find_data_files
 
 
 def infer_trade_side(trade_price, mid_price):
@@ -106,16 +102,20 @@ def plot_product(product_prices, product_trades, product_name, day_label, output
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: python research/visualize.py <prices_csv> <trades_csv>")
+    if len(sys.argv) < 2:
+        print("Usage: python research/visualize.py <day> [round]")
+        print("Example: python research/visualize.py -1")
         sys.exit(1)
 
-    prices_path = sys.argv[1]
-    trades_path = sys.argv[2]
+    day = sys.argv[1]
+    round_num = sys.argv[2] if len(sys.argv) > 2 else "0"
+    prices_path, trades_path = find_data_files(day, round_num)
+
     output_dir = os.path.join(os.path.dirname(__file__), "plots")
     os.makedirs(output_dir, exist_ok=True)
 
-    prices, trades = load_data(prices_path, trades_path)
+    prices = pd.read_csv(prices_path, sep=";")
+    trades = pd.read_csv(trades_path, sep=";")
     day_label = str(prices["day"].iloc[0])
 
     for product in prices["product"].unique():
