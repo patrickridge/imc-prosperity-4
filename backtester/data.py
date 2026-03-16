@@ -5,8 +5,8 @@ from backtester.datamodel import Symbol, Trade
 from backtester.file_reader import FileReader
 
 LIMITS = {
-    "EMERALDS": 50,
-    "TOMATOES": 50,
+    "EMERALDS": 80,
+    "TOMATOES": 80,
 }
 
 

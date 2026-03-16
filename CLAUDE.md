@@ -65,6 +65,11 @@ python3 research/trade_impact.py -1     # day -1, round 0
 5. Bundle for submission with `./submit.sh` (inlines Logger, swaps imports)
 6. Algo code stays minimal and production-ready at all times
 
+## References
+
+- **P4 Wiki**: https://imc-prosperity.notion.site/prosperity-4-wiki — use Notion MCP server to fetch pages (game mechanics, round details, position limits)
+- **Visualizer**: https://jmerle.github.io/imc-prosperity-3-visualizer/
+
 ## Do NOT
 
 - Add type hints, docstrings, or comments to code that is already clear
