@@ -1,3 +1,9 @@
+# Backtest output
+backtests/
+
+# Generated submissions (use ./submit.sh to regenerate)
+submissions/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

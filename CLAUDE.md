@@ -1,0 +1,62 @@
+# IMC Prosperity 4
+
+## Core Principle: Clarity Above All
+
+Every line of code must be immediately understandable. If it needs a comment, rewrite it first. Simple beats clever. Always.
+
+## Code Rules
+
+- **No walls of text.** Keep functions under 30 lines. Break large logic into small, named steps.
+- **No magic numbers.** Use named constants with obvious names.
+- **No clever one-liners.** Expand them. Readability wins over brevity.
+- **No deep nesting.** Early returns, guard clauses. Max 2 levels of indentation in logic.
+- **No god files.** One concern per file. Split aggressively.
+- **Name things so comments are unnecessary.** `calc_fair_value()` not `calc()`. `best_bid_price` not `bp`.
+
+## Information Overload Prevention
+
+- Do not dump large outputs, logs, or data tables without summarizing first.
+- When analyzing data, lead with the insight, then show supporting evidence only if asked.
+- Keep responses short. One idea per message when possible.
+- Prefer a 3-line summary over a 30-line explanation.
+
+## Project Structure
+
+```
+strategies/     # One .py per strategy. This is where you work.
+research/       # Notebooks, analysis, exploratory scripts
+data/round0/    # Market data by round
+backtester/     # Adapted jmerle backtester (do not edit unless extending infra)
+docs/reference/ # P3 solutions, writeups for learning
+backtest.sh     # Quick runner: ./backtest.sh strategies/my_strat.py 0
+submit.sh       # Bundle for upload: ./submit.sh strategies/my_strat.py
+```
+
+## Quick Start
+
+```bash
+# Run a strategy on all round 0 days
+./backtest.sh strategies/my_strat.py 0
+
+# Run on a specific day
+./backtest.sh strategies/my_strat.py 0--2
+
+# Open in visualizer after
+./backtest.sh strategies/my_strat.py 0 --vis
+```
+
+## Strategy Development Workflow
+
+1. Copy `strategies/example.py` to start a new strategy
+2. Research in `research/` — keep exploratory code separate from algo code
+3. Backtest with `./backtest.sh`
+4. Visualize with jmerle's visualizer (`--vis` flag)
+5. Bundle for submission with `./submit.sh` (inlines Logger, swaps imports)
+6. Algo code stays minimal and production-ready at all times
+
+## Do NOT
+
+- Add type hints, docstrings, or comments to code that is already clear
+- Over-engineer for hypothetical future rounds
+- Create abstractions until the same pattern appears 3+ times
+- Add error handling for impossible states inside algo logic
