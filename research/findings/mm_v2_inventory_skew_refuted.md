@@ -1,44 +1,48 @@
-# Findings
+---
+product: EMERALDS, TOMATOES
+date: 2026-04-11
+status: refuted
+hypothesis: Position pinning at +80 caps round-trip throughput; inventory skew that shifts both quotes toward unwinding will reopen buy quota and increase PnL.
+test: Clone mm_v1 → mm_v2 with SKEW_PER_UNIT=0.1 applied to both buy_price and sell_price in make_orders; backtest round 0 days -2 and -1; compare per-product PnL, pin time, and fill counts.
+result: refuted
+---
 
-Rolling record of what's been measured and what's been ruled out. Read this first before proposing a new strategy direction.
+## Why we looked
 
-## Baseline — mm_v1
+Baseline mm_v1 on round 0 days -2 and -1 totalled 29,414 (EMERALDS 14,525, TOMATOES 14,889). All EMERALDS PnL came from making — the book never has asks < 10,000 or bids > 10,000 in any of 20,000 snapshots, and every fill is at 9,993 / 10,007. EMERALDS pinned at +80 on 824 ticks (4.1% of day), TOMATOES on 415 (2.1%). Never hit −80.
 
-Round 0, days -2 and -1:
+Pinning *looked* like a throughput bottleneck: during pin windows `buy_qty = POSITION_LIMIT - position = 0`, so no new buy orders were placed. The hypothesis was that freeing the buy quota via faster unwinding would add round-trips at full edge.
 
-| Product  | Day -2 | Day -1 | Total  | ~PnL / limit / day |
-|----------|--------|--------|--------|--------------------|
-| EMERALDS |  6,958 |  7,567 | 14,525 | ~90                |
-| TOMATOES |  7,938 |  6,951 | 14,889 | ~91                |
-| **Total**| 14,896 | 14,518 | 29,414 |                    |
+## What we measured
 
-Verified from backtest log (not assumed):
-- **All EMERALDS PnL is from making**, not taking. The book never has asks < 10,000 or bids > 10,000 in any of 20,000 snapshots; every fill is at 9,993 / 10,007.
-- Buy/sell fills are near-symmetric (EMERALDS net −21 across 2 days; TOMATOES net +84, EOD ≈ flat).
-- EMERALDS pins at +80 on 824 ticks (4.1%), TOMATOES on 415 (2.1%). Never hits −80.
+mm_v2 vs mm_v1 on the same 2 days:
 
-## Open observations (not yet a hypothesis)
-
-- In the v2 run, TOMATOES (and EMERALDS when short) got fills at `best_ask + 1` — e.g. EMERALDS sold 198 units at 10,008 when skew pushed the ask up. Suggests counterparties are partially price-insensitive within the spread, which means wider-quote strategies may capture more per trade without losing fill count. Not tested.
-
-## Rejected hypotheses
-
-### mm_v2 — inventory skew in make_orders (rejected 2026-04-11)
-
-**Premise:** position pinning at +80 was capping throughput; skewing both quotes down when long would unwind faster, reopen buy quota, and increase round-trip count.
-
-**Change:** `SKEW_PER_UNIT = 0.1`, applied as `skew = -round(position * SKEW_PER_UNIT)` added to both `buy_price` and `sell_price` in `make_orders`.
-
-**Result:**
-
-| Product  | v1     | v2     | delta   |
+| product  | v1     | v2     | delta   |
 |----------|--------|--------|---------|
 | EMERALDS | 14,525 | 12,301 | −15%    |
 | TOMATOES | 14,889 | 13,867 | −7%     |
-| **Total**| 29,414 | 26,168 | **−11%**|
+| total    | 29,414 | 26,168 | **−11%**|
 
-**Why it failed:** mechanism worked (pin@+80 went 824 → 0 and 415 → 0) but the premise was wrong. Pinning was not a throughput bottleneck — it was a symptom of flow bursts that reversed naturally at full edge. Skewing quotes away during accumulation dropped per-round-trip edge from 14 → ~12 **and** dropped fill count by ~10%. Both terms moved the wrong way.
+Mechanism check (pin elimination): pin@+80 went **824 → 0** (EMERALDS) and **415 → 0** (TOMATOES). The skew did exactly what it was designed to do.
 
-**Lesson:** "time pinned" ≠ "fills missed during pinning". I measured the first and assumed the second. The pin was free edge-capture, not a blocker.
+EMERALDS fill comparison:
+- v1: 1,027 buys all at 9,993; 1,048 sells all at 10,007. Per-round-trip edge = 14.
+- v2: 917 buys across 9,992–9,995; 952 sells across 9,999–10,008. Per-round-trip edge ≈ 12.
 
-**Do not retry** any variant of this (including smaller `SKEW_PER_UNIT`) without first measuring **fills-missed-during-pin directly** — i.e., count counterparty flow that crossed fair while our position was capped. Parameter-tuning SKEW_PER_UNIT without that diagnostic would be tuning the wrong mechanism.
+Both the edge per trade (14 → 12) **and** the fill count (2,075 → 1,869) dropped.
+
+## What we found
+
+Pinning was not a throughput bottleneck. It was a symptom of flow bursts that reversed naturally at full edge — the strategy earned the full 14-seashell edge on every round-trip during pin windows. Skewing quotes to avoid pinning gave up edge per trade AND reduced fill frequency, because the skewed bid/ask moved further from the competitive 9,993/10,007 levels. Both terms moved the wrong way.
+
+Root cause of the misdiagnosis: "time pinned" was measured and treated as implying "fills missed during pin". Those are different quantities. Time-at-pin is easy to measure; fills-missed requires counting counterparty flow that would have been takeable but wasn't — and that count was never produced.
+
+Side observation worth keeping (not part of this finding): EMERALDS sold 198 units at 10,008 in the v2 run when skew pushed the ask above the usual 10,007. This suggests counterparties are partially price-insensitive within the spread, which is a forward hypothesis for a *wider*-quote strategy. To be logged separately when that hypothesis is tested.
+
+## How it informs the code
+
+`strategies/mm_v1.py` is unchanged; mm_v2 was deleted, not merged. The `fair ± 1` quote placement in `make_orders` (mm_v1.py:60–61) is earning the full spread and should not be disturbed without an explicit measurement of fills-missed.
+
+## When to retire
+
+Retry of inventory skew is permitted **if and only if** a direct measurement shows counterparty flow crossed fair while our position was pinned — i.e. asks below 10,000 or bids above 10,000 appeared while we were capped at +80. Without that evidence, inventory skew is fixing a phantom bottleneck and parameter-tuning `SKEW_PER_UNIT` is tuning the wrong mechanism. Status stays `refuted` until the missing diagnostic lands.
