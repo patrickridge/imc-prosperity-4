@@ -67,8 +67,16 @@ python3 research/trade_impact.py -1     # day -1, round 0
 
 ## References
 
-- **P4 Wiki**: https://imc-prosperity.notion.site/prosperity-4-wiki — use Notion MCP server to fetch pages (game mechanics, round details, position limits)
+- **`docs/strategy-principles.md`** — read before designing or modifying any strategy. Non-negotiable design rules (re-tune don't rewrite, no overfitting, explain with real behavior, keep it simple).
+- **`docs/reference/`** — P2/P3 writeups and solved strategies. When a new product or mechanic appears, check here for precedent before inventing.
+- **P4 Wiki**: https://imc-prosperity.notion.site/prosperity-4-wiki — when the user asks about game mechanics, products, position limits, or round rules, fetch the relevant page via the Notion MCP server first instead of guessing.
 - **Visualizer**: https://jmerle.github.io/imc-prosperity-3-visualizer/
+
+## Interpreting Backtests
+
+- The backtester prints a total PnL and a per-product breakdown. Read the per-product line first — a good total can hide one product losing money.
+- Prefer **stable parameter regions** over peak PnL. If a ±1 shift in a knob collapses the PnL, it is overfit.
+- Compare against the previous run on the same day(s), not against a theoretical maximum.
 
 ## Do NOT
 
@@ -76,3 +84,4 @@ python3 research/trade_impact.py -1     # day -1, round 0
 - Over-engineer for hypothetical future rounds
 - Create abstractions until the same pattern appears 3+ times
 - Add error handling for impossible states inside algo logic
+- Write unit tests for strategy code. The backtest is the test. Tests belong only inside `backtester/` if you are extending infra.
