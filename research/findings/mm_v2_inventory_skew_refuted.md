@@ -43,6 +43,24 @@ Side observation worth keeping (not part of this finding): EMERALDS sold 198 uni
 
 `strategies/mm_v1.py` is unchanged; mm_v2 was deleted, not merged. The `fair ± 1` quote placement in `make_orders` (mm_v1.py:60–61) is earning the full spread and should not be disturbed without an explicit measurement of fills-missed.
 
+## Gate measurement (2026-04-12)
+
+The refutation's retire condition ("direct measurement of counterparty flow crossing fair while pinned") was run against the v1 baseline log:
+
+|                   | pin ticks | missed takeable volume |
+|-------------------|-----------|------------------------|
+| EMERALDS (long)   |       824 |                      0 |
+| TOMATOES (long)   |       415 |                    147 |
+
+- **EMERALDS: absolute zero.** No ask ever appears below 10,000 during any of the 824 pin windows. Refutation stands without modification.
+- **TOMATOES: 147 units across 415 ticks** (~0.35/tick avg, occasional clusters of 9–11). Gate is technically crossed.
+
+**Arithmetic still says no.** Max theoretical recoverable ≈ 147 × (wall_mid − ask) ≈ order of 300 seashells if the missed asks sat ~2 below fair on average. mm_v2 lost **1,022 seashells on TOMATOES** to skew-driven edge erosion. Recoverable < loss. Broad inventory skew remains a losing trade even with the evidence.
+
+Diagnostic note: the first run of this measurement returned `0` on both products due to a regex bug (literal `\n` decode + greedy `\w+` captured product name as `nTOMATOES`, which failed the book lookup). Fixed and rerun before interpretation. "Zero matches" is only trustworthy when the unmatched count is also zero.
+
 ## When to retire
 
-Retry of inventory skew is permitted **if and only if** a direct measurement shows counterparty flow crossed fair while our position was pinned — i.e. asks below 10,000 or bids above 10,000 appeared while we were capped at +80. Without that evidence, inventory skew is fixing a phantom bottleneck and parameter-tuning `SKEW_PER_UNIT` is tuning the wrong mechanism. Status stays `refuted` until the missing diagnostic lands.
+**Broad inventory skew** (the mm_v2 mechanism — symmetric shift applied to both quotes every tick) is **refuted permanently**. Do not retry any `SKEW_PER_UNIT`-style parameter; the measurement shows there is no recoverable edge on EMERALDS and the TOMATOES recoverable is smaller than the per-tick edge erosion the mechanism causes elsewhere.
+
+**Targeted take-priority during pins** was considered as a separate hypothesis: when `position == +POSITION_LIMIT` AND a takeable ask appears, free one unit by crossing our own make-quote and take the ask in the same tick. **Ruled out (2026-04-12)** — the Prosperity exchange enforces position limits by checking `position + total_buy_qty > LIMIT` across all submitted orders assuming full execution. Any buy order while at +POSITION_LIMIT causes all orders for the product to be rejected, regardless of concurrent sell orders. A two-tick variant (aggressive sell on tick T, take on tick T+1) doesn't work either because the takeable ask observed on tick T is not guaranteed to persist to tick T+1. The 147 TOMATOES units are not recoverable without a mechanism that can atomically sell-then-buy within a single tick, which the exchange does not support.
