@@ -1,0 +1,58 @@
+import numpy as np
+import plotly.graph_objects as go
+from dashboard.constants import (
+    BUY_COLOR, SELL_COLOR,
+    BUY_MARKER, SELL_MARKER,
+    TRADE_SIZE_SCALE, NORM_RELATIVE_MID,
+)
+
+
+def add_trade_markers(fig, trades_df, normalization, prices_df=None):
+    if trades_df.empty:
+        return fig
+
+    df = trades_df.copy()
+    df["plot_price"] = df["price"]
+
+    if normalization == NORM_RELATIVE_MID and prices_df is not None and not prices_df.empty:
+        mid_at_trade = np.interp(df["timestamp"], prices_df["timestamp"], prices_df["mid_price"])
+        df["plot_price"] = df["price"] - mid_at_trade
+
+    buys = df[df["side"] == "buy"]
+    sells = df[df["side"] == "sell"]
+
+    if not buys.empty:
+        fig.add_trace(go.Scattergl(
+            x=buys["timestamp"],
+            y=buys["plot_price"],
+            mode="markers",
+            marker=dict(
+                symbol=BUY_MARKER,
+                size=buys["quantity"] * TRADE_SIZE_SCALE,
+                color=BUY_COLOR,
+                opacity=0.8,
+                line=dict(width=1, color="white"),
+            ),
+            name="Buy trades",
+            customdata=buys["quantity"],
+            hovertemplate="t=%{x}<br>price=%{y:.1f}<br>qty=%{customdata}<extra></extra>",
+        ))
+
+    if not sells.empty:
+        fig.add_trace(go.Scattergl(
+            x=sells["timestamp"],
+            y=sells["plot_price"],
+            mode="markers",
+            marker=dict(
+                symbol=SELL_MARKER,
+                size=sells["quantity"] * TRADE_SIZE_SCALE,
+                color=SELL_COLOR,
+                opacity=0.8,
+                line=dict(width=1, color="white"),
+            ),
+            name="Sell trades",
+            customdata=sells["quantity"],
+            hovertemplate="t=%{x}<br>price=%{y:.1f}<br>qty=%{customdata}<extra></extra>",
+        ))
+
+    return fig
