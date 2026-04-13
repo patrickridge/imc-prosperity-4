@@ -3,13 +3,15 @@ from dashboard.constants import (
     SIDEBAR_WIDTH, NORMALIZATION_OPTIONS, NORM_RAW,
     DOWNSAMPLE_OPTIONS, DEFAULT_DOWNSAMPLE,
 )
-from dashboard.data_loader import list_available_data
+from dashboard.data_loader import list_available_data, list_backtest_logs
 
 
 def build_sidebar():
     available = list_available_data()
     rounds = sorted(set(r for r, d in available))
     default_round = rounds[0] if rounds else "0"
+
+    logs = list_backtest_logs()
 
     return html.Div(
         style={"width": SIDEBAR_WIDTH, "padding": "16px", "borderRight": "1px solid #ddd",
@@ -27,6 +29,11 @@ def build_sidebar():
                 value=DEFAULT_DOWNSAMPLE,
                 marks={v: str(v) for v in DOWNSAMPLE_OPTIONS},
             ),
+            html.Hr(style={"margin": "16px 0"}),
+            _dropdown_section(
+                "Backtest Log", "backtest-selector",
+                logs, logs[0] if logs else None,
+            ),
         ],
     )
 
@@ -38,6 +45,6 @@ def _dropdown_section(label, dropdown_id, options, default):
             id=dropdown_id,
             options=[{"label": str(o), "value": o} for o in options],
             value=default,
-            clearable=False,
+            clearable=True if dropdown_id == "backtest-selector" else False,
         ),
     ])
