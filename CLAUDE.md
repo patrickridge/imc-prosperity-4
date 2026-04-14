@@ -28,6 +28,7 @@ research/       # Notebooks, analysis, exploratory scripts
 data/round0/    # Market data by round
 backtester/     # Adapted jmerle backtester (do not edit unless extending infra)
 docs/reference/ # P3 solutions, writeups for learning
+dashboard/      # Interactive Plotly Dash dashboard
 backtest.sh     # Quick runner: ./backtest.sh strategies/my_strat.py 0
 submit.sh       # Bundle for upload: ./submit.sh strategies/my_strat.py
 ```
@@ -44,6 +45,17 @@ submit.sh       # Bundle for upload: ./submit.sh strategies/my_strat.py
 # Open in visualizer after
 ./backtest.sh strategies/my_strat.py 0 --vis
 ```
+
+## Dashboard
+
+```bash
+pip install dash
+python3 -m dashboard          # localhost:8050
+```
+
+Panels: order book scatter, spread, LOB depth, PnL, position, trade table.
+Select a backtest log to overlay your algo's trades, PnL, and position.
+Auto-discovers new data in `data/round*/` and logs in `backtests/`.
 
 ## Research Tools
 
