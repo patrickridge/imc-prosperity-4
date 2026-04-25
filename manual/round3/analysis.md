@@ -185,14 +185,48 @@ The cubic penalty means:
 
 | | Bid | Reasoning |
 |---|---|---|
-| **Lowest Bid** | **835** | Minimax-optimal across $V \in [920, 1100]$. Within 10% of optimal for any $V$. |
-| **Highest Bid** | **860** | ~30–50 pts above expected $\mu$. Comfortable margin against cubic penalty. |
+| **Lowest Bid** | **836** | Minimax-optimal across $V \in [920, 1170]$. Worst-case opportunity cost 11.3%. |
+| **Highest Bid** | **867** | Balances cubic penalty insurance vs overbid cost. Green across most (V, μ) space. |
+
+See `minimax_bids.py` for the sweep code and `bid2_heatmaps_zoomed.png` for the
+stability analysis across the 860–875 range.
+
+**Why 867 for Bid 2:** The opportunity cost heatmap over (V, μ) shows 867 keeps
+the red zone (cubic penalty damage) above μ ≈ 870 — unlikely based on P3 precedent
+where μ was only p*+2. Meanwhile overbid cost at low V stays under ~10%.
+Lower bids (860) break as soon as μ > 860. Higher bids (875) waste surplus when
+the population is conservative.
 
 ---
 
 ## Risk Summary
 
-- $V = 920$, $\mu = 810$: lose ~10% on Bid 1, full value on Bid 2. Solid.
-- $V = 1000$, $\mu = 820$: both bids near-optimal. Best case.
+- $V = 920$, $\mu = 810$: lose ~11% on Bid 1, full value on Bid 2. Solid.
+- $V = 1000$, $\mu = 830$: both bids near-optimal. Best case.
 - $V \ge 1170$: should have bid 920/920. But that means no real decision — unlikely.
-- $\mu > 860$: Bid 2 falls below average. Main risk. Mitigated by P3 evidence that $\mu$ stays near $p^*$.
+- $\mu > 870$: Bid 2 falls below average. Main risk. Mitigated by P3 evidence that $\mu$ stays near $p^*$.
+
+---
+
+## Assumptions
+
+These are NOT verified from P4 rules — they are carried over from P3 or inferred:
+
+1. **Cubic exponent.** The scaling factor $S = ((V-\mu)/(V-p))^3$ uses exponent 3,
+   taken from P3 Round 3 (source: `docs/reference/prosperity-3-hedgehogs.md:835`).
+   P4 may use a different exponent or a completely different penalty.
+
+2. **Same auction mechanic.** We assume Bid 2 uses the same scaling-factor approach
+   as P3. P4 might have a different game-theory layer entirely.
+
+3. **Uniform reserve prices.** We assume reserve prices are uniform on $[L, H]$.
+   P4 rules may use a different distribution.
+
+4. **Resale value V is unknown.** We guess $V \in [920, 1170]$ based on game-design
+   reasoning, not stated rules.
+
+5. **Population behavior.** We assume $\mu \approx p^* + \text{small offset}$ based
+   on P3 where $\mu$ was only +2 above $p^*$. P4 population may behave differently.
+
+6. **Pay-your-bid semantics.** We assume you pay your bid price, not second-price
+   or other auction format.
