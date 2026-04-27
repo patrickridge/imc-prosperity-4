@@ -24,7 +24,8 @@ Every line of code must be immediately understandable. If it needs a comment, re
 
 ```
 strategies/     # One .py per strategy. This is where you work.
-research/       # Notebooks, analysis, exploratory scripts
+research/       # Active exploratory scripts and findings
+utils/          # Shared tools: visualize, trade_impact, analyze_logs, optimize
 data/round0/    # Market data by round
 backtester/     # Adapted jmerle backtester (do not edit unless extending infra)
 docs/reference/ # P3 solutions, writeups for learning
@@ -61,11 +62,11 @@ Auto-discovers new data in `data/round*/` and logs in `backtests/`.
 
 ```bash
 # Visualize price/trades/LOB for a day
-python3 research/visualize.py -1        # day -1, round 0
-python3 research/visualize.py -2 1      # day -2, round 1
+python3 utils/visualize.py -1        # day -1, round 0
+python3 utils/visualize.py -2 1      # day -2, round 1
 
 # Trade impact analysis
-python3 research/trade_impact.py -1     # day -1, round 0
+python3 utils/trade_impact.py -1     # day -1, round 0
 ```
 
 ## Strategy Development Workflow

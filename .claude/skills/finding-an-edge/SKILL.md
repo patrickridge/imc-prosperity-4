@@ -142,7 +142,7 @@ prompt: |
 
   Your job: for EACH claim in the briefs that can be tested with data,
   load the relevant CSV files in data/round0/ and verify or refute it.
-  Use research/visualize.py if helpful (run with `python3 research/visualize.py <day>`).
+  Use utils/visualize.py if helpful (run with `python3 utils/visualize.py <day>`).
 
   Specifically test:
   1. Does the P3 fair value formula still hold on the current data?
