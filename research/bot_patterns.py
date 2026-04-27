@@ -93,7 +93,7 @@ def main():
     actions = attach_mid(actions, mid_lookup)
     actions = compute_edge_per_trade(actions)
 
-    print("=== Per-bot, per-product summary ===\n")
+    print(" Per-bot, per-product summary \n")
     print(summarize(actions).to_string())
 
 

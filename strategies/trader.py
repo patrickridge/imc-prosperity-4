@@ -6,17 +6,13 @@ from typing import Dict, List, NamedTuple, Tuple
 from datamodel import Order, OrderDepth, TradingState
 
 
-# ── Product symbols ──
-
 HYDROGEL_PACK = "HYDROGEL_PACK"
 VELVETFRUIT_EXTRACT = "VELVETFRUIT_EXTRACT"
 
-# ── Black-Scholes constants ──
 
 _SQRT_2 = sqrt(2.0)
 _BS_HALF_VARIANCE = 0.5
 
-# ── VEV option configuration ──
 
 _IV_MIN_EXTRINSIC = 0.02
 _IV_BISECT_ITERS = 40
@@ -105,7 +101,6 @@ _TTE_SEARCH_MIN_DAYS = 3
 _TTE_SEARCH_MAX_DAYS = 10
 _GAUSS_ELIM_ZERO_TOL = 1e-12
 
-# ── Hydrogel: anchored MM ──
 
 HYDROGEL_FAIR_VALUE = 9_991.0
 HYDROGEL_LIMIT = 200
@@ -114,7 +109,6 @@ HYDROGEL_TAKE_EDGE = 20
 HYDROGEL_TARGET_SCALE = 40
 HYDROGEL_MAX_TAKE_SIZE = 10
 
-# ── Velvetfruit: simple delta mean-reversion ──
 
 VELVETFRUIT_LIMIT = 200
 VELVETFRUIT_ANCHOR = 5_255.0
@@ -146,8 +140,6 @@ class SmilePoint(NamedTuple):
     implied_vol: float
 
 
-# ── Helpers for looking up strike / prior IV across all known symbols ──
-
 def _vev_strike(sym: str) -> float:
     if sym in _VEV_CONFIG:
         return _VEV_CONFIG[sym].strike
@@ -159,8 +151,6 @@ def _vev_prior_iv(sym: str) -> float:
         return _VEV_CONFIG[sym].prior_iv
     return _VEV_SMILE_ONLY_PRIOR_IV[sym]
 
-
-# ── Trader class ──
 
 class Trader:
     def run(
@@ -226,8 +216,6 @@ def _trade_all_vev(
             result[sym] = orders
 
 
-# ── Data persistence ──
-
 def _load_data(raw: str) -> dict:
     if not raw:
         return {}
@@ -237,8 +225,6 @@ def _load_data(raw: str) -> dict:
         return {}
     return loaded if isinstance(loaded, dict) else {}
 
-
-# ── Order book helpers ──
 
 def _best_bid(od: OrderDepth) -> int | None:
     return max(od.buy_orders) if od.buy_orders else None
@@ -255,8 +241,6 @@ def _wall_mid(od: OrderDepth) -> float | None:
         return None
     return (bid + ask) / 2.0
 
-
-# ── Black-Scholes primitives ──
 
 def _normal_cdf(x: float) -> float:
     return _BS_HALF_VARIANCE * (1.0 + erf(x / _SQRT_2))
@@ -289,8 +273,6 @@ def _bs_delta(spot: float, strike: float, tte_years: float, vol: float) -> float
     d1 = _bs_d1(spot, strike, tte_years, vol, scaled_vol)
     return _normal_cdf(d1)
 
-
-# ── TTE estimation ──
 
 def _estimate_start_tte_days(
     spot: float, option_mid: float, strike: float, vol: float,
@@ -328,8 +310,6 @@ def _vev_tte_years(timestamp: int, start_tte: float) -> float:
     return (start_tte - day_fraction) / _DAYS_PER_YEAR
 
 
-# ── VEV pricing ──
-
 def _vev_fair(
     sym: str, spot_mid: float, timestamp: int, start_tte: float,
 ) -> float:
@@ -365,8 +345,6 @@ def _vev_portfolio_delta(
         total += pos * _vev_delta(sym, spot_mid, state.timestamp, start_tte)
     return total
 
-
-# ── Implied vol and smile fitting ──
 
 def _vev_implied_vol(
     market_price: float, spot_mid: float, strike: float, tte_years: float,
@@ -477,8 +455,6 @@ def _evaluate_smile_fairs(
     return fitted
 
 
-# ── VEV position helpers ──
-
 def _vev_adjusted_fair(fair: float, position: int) -> float:
     return fair - _VEV_INV_SKEW * position / _VEV_LIMIT
 
@@ -496,8 +472,6 @@ def _vev_is_overpriced(
     cfg = _VEV_CONFIG[sym]
     return market_mid - adjusted_fair > cfg.max_overpricing
 
-
-# ── Hydrogel trading ──
 
 def _trade_hydrogel(od: OrderDepth, position: int) -> List[Order]:
     current_mid = _wall_mid(od)
@@ -518,8 +492,6 @@ def _trade_hydrogel(od: OrderDepth, position: int) -> List[Order]:
         target_position=target_position,
     )
 
-
-# ── Velvetfruit: simple delta mean-reversion taker ──
 
 def _trade_velvetfruit(od: OrderDepth, position: int) -> List[Order]:
     bid = _best_bid(od)
@@ -542,8 +514,6 @@ def _trade_velvetfruit(od: OrderDepth, position: int) -> List[Order]:
 
     return orders
 
-
-# ── VEV options: model-aware passive bid with aggressive rich exits ──
 
 def _trade_vev(
     sym: str,
@@ -645,8 +615,6 @@ def _vev_passive_bid(
         return []
     return [Order(sym, bid_price, qty)]
 
-
-# ── Hydrogel execution infrastructure ──
 
 def _trade_dynamic_product(
     config: ProductConfig,
