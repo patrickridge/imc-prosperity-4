@@ -15,7 +15,7 @@ Tuning is the act of moving an existing knob, never adding new ones. This skill 
 
 - User asks "how do I improve mm_v1" / "tune this" / "make X do better"
 - User wants to run a parameter sweep
-- User has results from `research/optimize.py` and wants to interpret them
+- User has results from `utils/optimize.py` and wants to interpret them
 - User is comparing two parameter values
 
 Do NOT use when: the user wants to write a new strategy from scratch (different workflow), or wants to add a new product (also different).
@@ -36,14 +36,14 @@ These come from `docs/strategy-principles.md`. Violating any of them is overfitt
 1. **Read `docs/strategy-principles.md`** (always — it's short).
 2. **Identify the candidate knob.** Look at the strategy file. Pick the one parameter whose effect on real market behavior you can articulate. State the hypothesis: "I expect raising `take_edge` from 0 to 1 to reduce adverse selection on EMERALDS because the L1 quotes are more honest than the user thinks."
 3. **Define the sweep range.** 5–7 values, evenly spaced, centered on the current value. Do not go wide — narrow sweeps reveal local stability.
-4. **Run the sweep on every available day.** Use `research/optimize.py` as a starting point, but be aware: as written, it sweeps 4 dimensions and sorts by total profit. **Modify it to sweep one dimension and report per-day PnL.** Do not trust the top-15-by-total list.
+4. **Run the sweep on every available day.** Use `utils/optimize.py` as a starting point, but be aware: as written, it sweeps 4 dimensions and sorts by total profit. **Modify it to sweep one dimension and report per-day PnL.** Do not trust the top-15-by-total list.
 5. **Look for the stable region.** Plot or tabulate per-day PnL across the swept values. The right answer is the middle of the widest plateau where all days are positive (or all days improve over baseline).
 6. **Pick the midpoint of the stable region**, not the peak.
 7. **Refuse to commit if no stable region exists.** Report "no stable region found, current value retained" — this is a valid outcome.
 
-## Reading `research/optimize.py` Output Safely
+## Reading `utils/optimize.py` Output Safely
 
-The current `research/optimize.py` (as of writing) sweeps 4 parameters simultaneously and prints the top-15 by total profit. **This output is dangerous as-is.**
+The current `utils/optimize.py` (as of writing) sweeps 4 parameters simultaneously and prints the top-15 by total profit. **This output is dangerous as-is.**
 
 - The top row is the peak — almost certainly overfit on the 2 days it tested.
 - A 4-dimensional sweep cannot reveal stability without per-dimension marginal analysis.

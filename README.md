@@ -36,14 +36,14 @@ pip install -e .
 
 ```bash
 # Visualize price/trades/LOB for a day
-python3 research/visualize.py -1        # day -1, round 0
-python3 research/visualize.py -2 1      # day -2, round 1
+python3 utils/visualize.py -1        # day -1, round 0
+python3 utils/visualize.py -2 1      # day -2, round 1
 
 # Trade impact analysis
-python3 research/trade_impact.py -1
+python3 utils/trade_impact.py -1
 
 # Analyze submission/backtest logs
-python3 research/analyze_logs.py backtests/my_run.log
+python3 utils/analyze_logs.py backtests/my_run.log
 ```
 
 ### Parse submission logs into data
