@@ -27,6 +27,20 @@ from backtester.models import (
 )
 
 
+# How many price ticks of slack to allow when matching resting orders against
+# historical trades in `aggressive` mode. Calibrated against IMC test/live behavior:
+#
+#   AGGRESSIVE_SLACK = 0  -> equivalent to "all" (default behavior)
+#   AGGRESSIVE_SLACK = 1  -> conservative: only fills 1-tick adjacent trades
+#   AGGRESSIVE_SLACK = 2  -> matches IMC test density on VEV inner strikes (first guess)
+#   AGGRESSIVE_SLACK = 5  -> very aggressive: may overstate fills, useful for stress testing
+#
+# TODO(Kieran): tune this against the live Day 3 result we have (+43,442) by running
+# `./backtest.sh strategies/round3_v5_baseline.py 3 --match-trades aggressive`
+# and adjusting until the local sim's VEV inner strikes show ~+5-7k profit per strike.
+AGGRESSIVE_SLACK = 2
+
+
 def prepare_state(state: TradingState, data: BacktestData) -> None:
     for product in data.products:
         order_depth = OrderDepth()
@@ -155,10 +169,14 @@ def match_buy_order(
     if trade_matching_mode == TradeMatchingMode.none:
         return trades
 
+    # Aggressive mode: relax price comparison by AGGRESSIVE_SLACK to simulate IMC
+    # bot density (bots hit resting orders more often than historical replay shows).
+    price_slack = AGGRESSIVE_SLACK if trade_matching_mode == TradeMatchingMode.aggressive else 0
+
     for market_trade in market_trades:
         if (
             market_trade.sell_quantity == 0
-            or market_trade.trade.price > order.price
+            or market_trade.trade.price > order.price + price_slack
             or (market_trade.trade.price == order.price and trade_matching_mode == TradeMatchingMode.worse)
         ):
             continue
@@ -211,10 +229,13 @@ def match_sell_order(
     if trade_matching_mode == TradeMatchingMode.none:
         return trades
 
+    # Aggressive mode: relax price comparison by AGGRESSIVE_SLACK (mirror of buy side).
+    price_slack = AGGRESSIVE_SLACK if trade_matching_mode == TradeMatchingMode.aggressive else 0
+
     for market_trade in market_trades:
         if (
             market_trade.buy_quantity == 0
-            or market_trade.trade.price < order.price
+            or market_trade.trade.price < order.price - price_slack
             or (market_trade.trade.price == order.price and trade_matching_mode == TradeMatchingMode.worse)
         ):
             continue

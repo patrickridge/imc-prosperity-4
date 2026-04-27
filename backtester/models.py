@@ -108,3 +108,4 @@ class TradeMatchingMode(str, Enum):
     all = "all"
     worse = "worse"
     none = "none"
+    aggressive = "aggressive"  # simulates IMC bot density: fills resting orders within slack
