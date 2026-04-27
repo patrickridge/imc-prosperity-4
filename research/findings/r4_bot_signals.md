@@ -1,7 +1,7 @@
 # R4 Bot Directional Signals
 
 *All findings independently verified by separate agents on 2026-04-27.*
-*7 exploitation hypotheses tested and reviewed on 2026-04-27. See appendix.*
+*12 exploitation hypotheses tested and reviewed on 2026-04-27. See appendix.*
 
 ## Method
 
@@ -142,7 +142,7 @@ Mark 22 consistently sells below mid. Our passive bid strategy already captures 
 
 ## Exhaustive exploitation hypothesis testing
 
-Eight hypotheses tested in parallel, each independently reviewed. All rejected.
+Twelve hypotheses tested in parallel, each independently reviewed. All rejected.
 
 | # | Hypothesis | Verdict | Key reason |
 |---|-----------|---------|------------|
@@ -154,13 +154,17 @@ Eight hypotheses tested in parallel, each independently reviewed. All rejected.
 | H6 | Counterparty pairing | Dead end | Mark 67's signal is identical (+2.0) regardless of counterparty |
 | H7 | Trade size conviction | Dead end | 5-lot and 15-lot Mark 67 buys produce the same ~2 tick impact |
 | H8 | Options → spot linkage | Dead end | Mark 01 buys 100% from Mark 22 (same counterparty trap). Deduplicated n=318, t=1.17 n.s. Inconsistent across days. |
+| H9 | Conditional post-obs continuation | Dead end | Best regime: 0.67 ticks (n.s.). No condition breaks 1 tick; need 2.5 to cover half the spread. |
+| H10 | Impact distribution / tails | Dead end | VE is low-vol. P(>10 ticks post-obs) = 0%. No fat tails, no jump prediction. |
+| H11 | Bot absence as signal | Dead end | Silence is mildly bullish (opposite of hypothesis), ~0.5 ticks, 10x below spread. Inconsistent across days. |
+| H12 | Cross-bot temporal prediction | Dead end | Bots co-fire (54%) or are independent. Best hazard ratio 1.32x, inconsistent across days. |
 
 **Review corrections applied:**
 - H2 had a fill-timing bug (off by one tick). Corrected PnL is weakly negative, not strongly negative. Still not exploitable (N=10 events).
 - H4's "2nd-half strengthening" is partially a market trend artifact. After trend adjustment, alpha strengthens on Days 1+3 but not Day 2. Not robust on 3 days.
 - H3's two-bot framing is redundant (Mark 14/38 are exact negatives by construction).
 
-Scripts: `research/h1_signal_biased_mm.py` through `research/h8b_options_signal_deep.py`.
+Scripts: `research/h1_signal_biased_mm.py` through `research/h12_cross_bot_timing.py`.
 
 ## Implication
 
@@ -174,12 +178,39 @@ The signal is real, consistent, but **not actionable** via:
 - Volatility prediction (no spread/vol signal)
 - Counterparty pairing (no amplification)
 - Options → spot lead (counterparty duplication artifact, n.s. after dedup)
+- Conditional regimes (vol, momentum, book imbalance — no condition breaks 1 tick)
+- Tail/jump prediction (VE is low-vol, no fat tails post-observation)
+- Bot absence (opposite sign, ~0.5 ticks, 10x below spread)
+- Cross-bot timing (co-fire or independent, no predictable cascade)
 
 VEV options have execution edge patterns but no directional signal.
-Our existing passive bid strategy already benefits from Mark 22's cheap selling.
 
 **Recurring counterparty trap:** VE spot (67/49), HP (14/38), VEV options (01/22) all
 share the same structure — two bots primarily trading with each other, creating the
 illusion of two confirming signals from one event.
 
-**Bot signal investigation closed.** No strategy change warranted.
+## Exploitable bot execution patterns
+
+Two bot behaviors are mechanically exploitable (not directional signal — execution edge):
+
+### Mark 38 on VEV_4000 (verified)
+Mark 38 is a pure crossing bot: sells at exactly `best_bid`, buys at exactly `best_ask`,
+100% of the time. Mark 14 defines the book (their quotes are bid/ask). The spread is ~21
+ticks, so Mark 38 loses 10.4 per trade by construction. 128-164 trades/day, ~50/50
+buy/sell.
+
+**Optimal bid_edge = 9.5** (verified by simulation across all edge values 0.5-12.0).
+At 9.5 we sit 1 tick above Mark 14's bid in the majority of cases, capturing 434 of 442
+trades across 3 days. PnL/day = 2,717 vs 2,288 at current bid_edge=8 (+19%).
+Sharp cliff at 10.0 (loses 51 fills) and 10.5 (nearly zero fills — tied with Mark 14).
+
+### Mark 22 on VEV near-ATM options (verified, marginal)
+Mark 22 sells at exactly `bid_price_1` on VEV_5200/5300/5400/5500. Edge = half-spread
+(0.5-1.0 ticks). Mark 01 captures 89% of this flow via FIFO priority — we get near-zero
+fills at current settings. Best case: bid at mid-0.5 on VEV_5200/5300 (spread≥2) for
+~137 PnL/day. Marginal, and accumulates long delta risk.
+
+Scripts: `research/insight2_vev4000_edge.py`, `research/insight3_mark22_options.py`.
+
+**Bot signal investigation closed.** Directional signals not actionable (12 hypotheses
+rejected). Two execution-edge patterns identified above.
