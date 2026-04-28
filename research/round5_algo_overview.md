@@ -79,14 +79,49 @@ The combined-3-day correlation was misleading. Daily correlation is unreliable f
 | UV_VISOR_AMBER | −15.0% | −13.0% | −3.5% | Weak short trend, fading |
 | ROBOT_IRONING | −4.9% | −21.0% | +4.4% | Reversing; market-make only |
 
+### H3: PANEL basket relationships (`round5_h3_panel_basket.py`)
+
+Tested whether PANEL prices are linked by area (1X4 = 2X2 = 4 sq units, etc.).
+
+**Result: only one relation has any merit.**
+
+| Relation | Day 2 mean | Day 3 mean | Day 4 mean | Verdict |
+|---|---|---|---|---|
+| **PANEL_1X4 ≈ PANEL_2X2** (both 4 sq) | +216 | −535 | −218 | Spread is small (~2-5%), mean-reverting → potential pair trade |
+| PANEL_2X4 ≈ 2 × PANEL_2X2 | −8900 | −9127 | −5636 | Way off zero — not a basket |
+| PANEL_4X4 ≈ 4 × PANEL_2X2 | −29187 | −31120 | −24975 | Same — products priced independently |
+
+PANELs are NOT priced linearly by area. The only tradeable relationship is the 1X4↔2X2 spread, and even that drifts day-to-day.
+
+## Bots / trader IDs in R5
+
+**R5 trades CSVs have NO trader IDs.** Verified across all 35,385 trades on days 2/3/4 — buyer/seller fields are all empty (R4 had IDs on every row).
+
+This kills the Olivia-style copy-trade approach (`round4_v1_olivia.py`) for R5. All R5 strategies must be statistical / TA-based, no counterparty signal.
+
+## Compared to P2/P3 round 5
+
+| | P2 R5 | P3 R5 | P4 R5 |
+|---|---|---|---|
+| # products | ~9 | ~15 | **50** (10 categories × 5) |
+| Mechanic | Cross-year data mapping (P1 prices predicted P2) + bot signals (Vladimir, Remy, Rihanna, Vinnie) | Trader IDs revealed → Olivia copy-trading | New product taxonomy, **no trader IDs** |
+| Counterparty info | Named bots, deterministic signals | Trader IDs in CSVs | None (anonymized) |
+| Manual challenge | News-driven portfolio (similar) | News-driven portfolio (similar) | News-driven portfolio (same shape) |
+
+The 10-categories × 5-variants structure is **new to P4 R5** — no precedent in P2 or P3. The manual news challenge is recurring across all three comps.
+
+Implication: don't try to port `round4_v1_olivia.py` or P3 Olivia patterns. Lean on within-category structure (PANELs, PEBBLES, MICROCHIP) instead.
+
 ## Strategy direction
 
-The wiki promised *"strong patterns embedded in price movements"* — confirmed. But H1 + H2 sharpen it considerably:
+The wiki promised *"strong patterns embedded in price movements"* — confirmed, but H1/H2/H3 sharpen what's tradeable:
 
-1. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative, no reversals. These are the highest-conviction trend trades.
+1. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative, no reversals. Highest-conviction trend trades.
 2. **Cleanest directional long**: GALAXY_SOUNDS_BLACK_HOLES — steady positive every day.
-3. **Avoid as static pair trades**: PEBBLES_XL/XS and MICROCHIP_SQUARE/OVAL — correlation breaks intraday.
-4. **Risky directionals**: PEBBLES_XL, MICROCHIP_SQUARE — strong but with reversal days. Need position management to survive the bad day.
+3. **PANEL_1X4 ↔ PANEL_2X2 spread** — only viable basket relation; spread is small and mean-reverts.
+4. **Avoid as static pair trades**: PEBBLES_XL/XS and MICROCHIP_SQUARE/OVAL — correlation breaks intraday.
+5. **Risky directionals**: PEBBLES_XL, MICROCHIP_SQUARE — strong overall but reversal days hurt.
+6. **No bot signals available** — strategies must be pure statistical / market-making / trend-following.
 3. **Market-make the SNACKPACKs and TRANSLATORs** for steady tick income.
 4. **Ignore** anything under 15% range with no obvious pair.
 

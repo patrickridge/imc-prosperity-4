@@ -102,7 +102,7 @@ _TTE_SEARCH_MAX_DAYS = 10
 _GAUSS_ELIM_ZERO_TOL = 1e-12
 
 
-HYDROGEL_FAIR_VALUE = 9_991.0
+HYDROGEL_FAIR_VALUE = 10_000.0
 HYDROGEL_LIMIT = 200
 HYDROGEL_POST_EDGE = 3
 HYDROGEL_TAKE_EDGE = 20
@@ -152,6 +152,87 @@ def _vev_prior_iv(sym: str) -> float:
     return _VEV_SMILE_ONLY_PRIOR_IV[sym]
 
 
+# Rolling-mean overlay on velvetfruit. When spot deviates >2 stddev from
+# its rolling mean, take a small same-direction voucher position betting
+# on reversion. Capped at 50 contracts/voucher and 5 fills/tick to keep
+# execution cost low.
+
+_ROLLING_WINDOW = 300
+_ZSCORE_TRIGGER = 2.0
+_OVERLAY_MAX_POSITION = 50
+_OVERLAY_MAX_TAKE_PER_TICK = 5
+
+
+def _update_history(data: dict, mid: float) -> List[float]:
+    history = data.get("vfe_mids", [])
+    history.append(mid)
+    if len(history) > _ROLLING_WINDOW * 2:
+        history = history[-_ROLLING_WINDOW:]
+    data["vfe_mids"] = history
+    return history
+
+
+def _rolling_mean_signal(history: List[float]) -> int:
+    if len(history) < _ROLLING_WINDOW:
+        return 0
+    window = history[-_ROLLING_WINDOW:]
+    mean = sum(window) / len(window)
+    variance = sum((v - mean) ** 2 for v in window) / len(window)
+    if variance < 1e-9:
+        return 0
+    std = sqrt(variance)
+    z = (mean - history[-1]) / std
+    if z >= _ZSCORE_TRIGGER:
+        return 1
+    if z <= -_ZSCORE_TRIGGER:
+        return -1
+    return 0
+
+
+def _take_top_level(
+    sym: str, depth: OrderDepth, current: int, target: int,
+) -> List[Order]:
+    diff = target - current
+    if diff > 0 and depth.sell_orders:
+        best_ask = min(depth.sell_orders.keys())
+        available = -depth.sell_orders[best_ask]
+        qty = min(diff, available, _OVERLAY_MAX_TAKE_PER_TICK)
+        if qty > 0:
+            return [Order(sym, best_ask, qty)]
+    if diff < 0 and depth.buy_orders:
+        best_bid = max(depth.buy_orders.keys())
+        available = depth.buy_orders[best_bid]
+        qty = min(-diff, available, _OVERLAY_MAX_TAKE_PER_TICK)
+        if qty > 0:
+            return [Order(sym, best_bid, -qty)]
+    return []
+
+
+def _apply_overlay(
+    result: Dict[str, List[Order]],
+    state: TradingState,
+    signal: int,
+) -> None:
+    if signal == 0:
+        return
+    target = signal * _OVERLAY_MAX_POSITION
+    for sym in _VEV_ACTIVE_SYMBOLS:
+        # Skip wide-spread strikes where take cost dominates the signal.
+        if sym == "VEV_4000":
+            continue
+        depth = state.order_depths.get(sym)
+        if depth is None:
+            continue
+        position = state.position.get(sym, 0)
+        if signal > 0 and position >= target:
+            continue
+        if signal < 0 and position <= target:
+            continue
+        orders = _take_top_level(sym, depth, position, target)
+        if orders:
+            result.setdefault(sym, []).extend(orders)
+
+
 class Trader:
     def run(
         self, state: TradingState
@@ -164,6 +245,11 @@ class Trader:
         _add_orders(result, HYDROGEL_PACK, state, _trade_hydrogel)
         _add_orders(result, VELVETFRUIT_EXTRACT, state, _trade_velvetfruit)
         _trade_all_vev(result, state, spot_mid, start_tte)
+
+        if spot_mid is not None:
+            history = _update_history(data, spot_mid)
+            signal = _rolling_mean_signal(history)
+            _apply_overlay(result, state, signal)
 
         return result, 0, json.dumps(data, separators=(",", ":"))
 
