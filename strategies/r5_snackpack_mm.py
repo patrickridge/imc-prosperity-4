@@ -12,8 +12,9 @@ PRODUCTS = [
 ]
 POSITION_LIMIT = 10
 QUOTE_SIZE = 5
-OBI_SKEW = 0.3
-INVENTORY_PENALTY = 0.5
+OBI_SKEW = 1.2
+INVENTORY_PENALTY = 0.8
+EDGE = 2
 
 
 def best_bid_ask(order_depth):
@@ -45,9 +46,9 @@ def quote_orders(product, fair, position):
 
     orders = []
     if buy_size > 0:
-        orders.append(Order(product, int(fair - 1), buy_size))
+        orders.append(Order(product, int(fair - EDGE), buy_size))
     if sell_size > 0:
-        orders.append(Order(product, int(fair + 1), -sell_size))
+        orders.append(Order(product, int(fair + EDGE), -sell_size))
     return orders
 
 
