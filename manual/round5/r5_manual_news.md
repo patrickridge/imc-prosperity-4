@@ -54,7 +54,7 @@ Sum the optima: if `Σ |r_i|/2 ≤ 1`, the unconstrained allocation works. Other
 
 P3 hedgehogs scored **126,751 / 194,522 optimal** on this kind of round — they intentionally hedged below optimal because expected moves were guesses. We should do the same.
 
-## What you (Lev / team) need to fill in
+## What team needs to fill in
 
 > ★ This is the meaningful decision: estimate expected move `r_i` for each story.
 >

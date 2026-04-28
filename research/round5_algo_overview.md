@@ -50,18 +50,43 @@ Run [`research/round5_explore.py`](round5_explore.py) for the full table. Headli
 
 **SNACKPACKs are dead** — half the volatility of the next-quietest group. Skip.
 
-### Pair-trade smell tests
+### Pair-trade smell tests (UPDATED — see H1 below)
 
-- **PEBBLES_XL ↔ PEBBLES_XS: corr = −0.83** over 3 days. They drift in opposite directions consistently. Long XL / short XS is a near-textbook pair.
-- **MICROCHIP_SQUARE ↔ MICROCHIP_OVAL** look similar (one drifts +36%, the other −45%). Worth confirming with `--category MICROCHIP`.
+- 3-day combined: PEBBLES_XL ↔ XS corr **−0.83**, MICROCHIP_SQUARE ↔ OVAL combined corr **−0.73**.
+- **Day-by-day breakdown reveals these are NOT stable pairs.** See `round5_h1_pair_drift.py`.
+
+## Hypothesis tests
+
+### H1: Pair-trade stability (`round5_h1_pair_drift.py`)
+
+| Pair | Day 2 corr | Day 3 corr | Day 4 corr | Verdict |
+|---|---|---|---|---|
+| PEBBLES_XL / PEBBLES_XS | **−0.875** | **+0.015** | **−0.829** | Pair breaks on day 3 — DO NOT trade as static pair |
+| MICROCHIP_SQUARE / OVAL | +0.076 | −0.836 | +0.611 | Highly unstable, only one day shows the negative correlation |
+
+The combined-3-day correlation was misleading. Daily correlation is unreliable for both pairs.
+
+### H2: Drift persistence (`round5_h2_drift_persistence.py`)
+
+| Product | Day 2 | Day 3 | Day 4 | Verdict |
+|---|---|---|---|---|
+| **PEBBLES_XS** | −19.5% | −14.9% | −12.0% | Cleanest: every day negative, monotonic short |
+| **MICROCHIP_OVAL** | −7.4% | −19.7% | −25.6% | All 3 days negative, accelerating short |
+| **GALAXY_SOUNDS_BLACK_HOLES** | +14.5% | +6.0% | +10.9% | Steady positive trend |
+| PEBBLES_XL | +36.7% | −11.4% | +33.3% | Net long but reverses on day 3 — directional bets risky |
+| MICROCHIP_SQUARE | +24.6% | +27.6% | −14.3% | Two days strong long, day 3 reversal |
+| OXYGEN_SHAKE_GARLIC | +18.3% | +0.9% | +16.4% | Weak trend, day 3 flat |
+| UV_VISOR_AMBER | −15.0% | −13.0% | −3.5% | Weak short trend, fading |
+| ROBOT_IRONING | −4.9% | −21.0% | +4.4% | Reversing; market-make only |
 
 ## Strategy direction
 
-The wiki promised *"strong patterns embedded in price movements"* — the data confirms it. Two categories (PEBBLES, MICROCHIP) carry an obvious directional signal across all 3 days. With **position limit 10 per product**, you can't size up much, but the moves are huge in % terms — even tiny inventory captures meaningful PnL on a 60% drift.
+The wiki promised *"strong patterns embedded in price movements"* — confirmed. But H1 + H2 sharpen it considerably:
 
-Suggested allocation of effort:
-1. **Trend-follow the 8 big drifters** above (long the up, short the down).
-2. **Pair-trade PEBBLES_XL/XS** (and likely MICROCHIP_SQUARE/OVAL).
+1. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative, no reversals. These are the highest-conviction trend trades.
+2. **Cleanest directional long**: GALAXY_SOUNDS_BLACK_HOLES — steady positive every day.
+3. **Avoid as static pair trades**: PEBBLES_XL/XS and MICROCHIP_SQUARE/OVAL — correlation breaks intraday.
+4. **Risky directionals**: PEBBLES_XL, MICROCHIP_SQUARE — strong but with reversal days. Need position management to survive the bad day.
 3. **Market-make the SNACKPACKs and TRANSLATORs** for steady tick income.
 4. **Ignore** anything under 15% range with no obvious pair.
 
