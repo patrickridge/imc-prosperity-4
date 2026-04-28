@@ -6,6 +6,7 @@ from dashboard.layouts.depth import build_depth_panel
 from dashboard.layouts.pnl import build_pnl_panel
 from dashboard.layouts.position import build_position_panel
 from dashboard.layouts.trade_table import build_trade_table
+from dashboard.layouts.category_overlay import build_category_overlay_panel
 from dashboard.callbacks.selectors import register_selector_callbacks
 from dashboard.callbacks.market_cb import register_market_callbacks
 from dashboard.callbacks.spread_cb import register_spread_callbacks
@@ -14,6 +15,7 @@ from dashboard.callbacks.pnl_cb import register_pnl_callbacks
 from dashboard.callbacks.position_cb import register_position_callbacks
 from dashboard.callbacks.table_cb import register_table_callbacks
 from dashboard.callbacks.sync_zoom import register_sync_zoom
+from dashboard.callbacks.category_overlay_cb import register_category_overlay_callbacks
 
 app = Dash(__name__, suppress_callback_exceptions=True)
 
@@ -29,6 +31,7 @@ app.layout = html.Div(
                 build_depth_panel(),
                 build_pnl_panel(),
                 build_position_panel(),
+                build_category_overlay_panel(),
                 build_trade_table(),
             ],
         ),
@@ -43,6 +46,7 @@ register_pnl_callbacks(app)
 register_position_callbacks(app)
 register_table_callbacks(app)
 register_sync_zoom(app)
+register_category_overlay_callbacks(app)
 
 if __name__ == "__main__":
     app.run(debug=True, port=8050)
