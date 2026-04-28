@@ -93,6 +93,53 @@ Tested whether PANEL prices are linked by area (1X4 = 2X2 = 4 sq units, etc.).
 
 PANELs are NOT priced linearly by area. The only tradeable relationship is the 1X4↔2X2 spread, and even that drifts day-to-day.
 
+### H4: Order-book imbalance signal (`round5_h4_obi_signal.py`)
+
+OBI = (bid_vol_1 − ask_vol_1) / total. Tested correlation with future log-returns at +1, +5, +10, +50 ticks.
+
+| Product | corr_1 | Day-by-day stable? |
+|---|---|---|
+| **SNACKPACK_PISTACHIO** | +0.133 | yes (+0.141 / +0.118 / +0.139) |
+| **SNACKPACK_CHOCOLATE** | +0.117 | yes |
+| **SNACKPACK_VANILLA** | +0.114 | yes |
+| **SNACKPACK_RASPBERRY** | +0.102 | yes |
+| **SNACKPACK_STRAWBERRY** | +0.097 | yes |
+
+21 of 50 products show |corr| ≥ 0.05 at some horizon. The signal is strongest at k=1 and decays — textbook microstructure. **Use to skew quotes when MM, not for directional bets.**
+
+The trenders (PEBBLES_XS, MICROCHIP_OVAL) have weak OBI — directional drift dominates microstructure on those.
+
+### H5: Lead-lag within categories (`round5_h5_lead_lag.py`)
+
+Tested forward-lagged cross-correlation across all 10 categories (5 products each, lags 1–5 ticks).
+
+**Result: NO category has a leader.** Best lead-lag correlation across all 10 categories is `±0.022` — pure noise. Don't try to predict followers from leaders; no edge there.
+
+### H6: Market-making viability (`round5_h6_spread_mm.py`)
+
+`mm_score = mean_spread / log-return-volatility`. Higher = better MM target.
+
+| Product | mm_score | mean spread | top size | wide_pct |
+|---|---|---|---|---|
+| **SNACKPACK_PISTACHIO** | **288.6** | 15.93 | 30 | 100% |
+| **SNACKPACK_VANILLA** | 261.4 | 16.87 | 30 | 100% |
+| **SNACKPACK_CHOCOLATE** | 246.4 | 16.47 | 30 | 100% |
+| SNACKPACK_STRAWBERRY | 234.2 | 17.83 | 30 | 100% |
+| SNACKPACK_RASPBERRY | 209.7 | 16.84 | 30 | 100% |
+| OXYGEN_SHAKE_GARLIC | 149.7 | 15.05 | 18 | 100% |
+
+**SNACKPACKs are the dominant MM candidate**. They were "dead" by H2 (12% range, no drift) but have:
+- Mean spread ~16 (huge — room to quote inside)
+- Top-of-book size 30 (deep liquidity for fills)
+- Lowest volatility (0.055–0.080% per tick)
+- Plus the strongest OBI signal from H4
+
+Worst MM candidates: PEBBLES_XS, MICROCHIP_OVAL, ROBOT_IRONING — the trenders. Don't MM these, trend-follow.
+
+## Combined H4 + H6 takeaway
+
+The "dead products" turn out to be the goldmine. **Market-make SNACKPACKs with OBI-skewed quotes** — wide spread, deep book, stable microstructure signal, low vol means we don't get adversely selected. This is the highest-edge play in the round, *if* the strategy can quote 50 products simultaneously.
+
 ## Bots / trader IDs in R5
 
 **R5 trades CSVs have NO trader IDs.** Verified across all 35,385 trades on days 2/3/4 — buyer/seller fields are all empty (R4 had IDs on every row).
@@ -116,12 +163,14 @@ Implication: don't try to port `round4_v1_olivia.py` or P3 Olivia patterns. Lean
 
 The wiki promised *"strong patterns embedded in price movements"* — confirmed, but H1/H2/H3 sharpen what's tradeable:
 
-1. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative, no reversals. Highest-conviction trend trades.
-2. **Cleanest directional long**: GALAXY_SOUNDS_BLACK_HOLES — steady positive every day.
-3. **PANEL_1X4 ↔ PANEL_2X2 spread** — only viable basket relation; spread is small and mean-reverts.
-4. **Avoid as static pair trades**: PEBBLES_XL/XS and MICROCHIP_SQUARE/OVAL — correlation breaks intraday.
-5. **Risky directionals**: PEBBLES_XL, MICROCHIP_SQUARE — strong overall but reversal days hurt.
-6. **No bot signals available** — strategies must be pure statistical / market-making / trend-following.
+1. **Market-make all 5 SNACKPACKs with OBI-skewed quotes** — highest-edge play, microstructure signal is real and stable (H4 + H6).
+2. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative, no reversals (H2). Trend-follow with hard inventory caps.
+3. **Cleanest directional long**: GALAXY_SOUNDS_BLACK_HOLES — steady positive every day. Plus a wide spread (mm_score 145), so an MM with directional skew can earn both ways.
+4. **PANEL_1X4 ↔ PANEL_2X2 spread** — only viable basket relation; spread is small and mean-reverts (H3).
+5. **Avoid as static pair trades**: PEBBLES_XL/XS and MICROCHIP_SQUARE/OVAL — correlation breaks intraday (H1).
+6. **No within-category lead-lag** — don't try to trade follower products off leader signal (H5).
+7. **Risky directionals**: PEBBLES_XL, MICROCHIP_SQUARE — strong overall but reversal days hurt (H2).
+8. **No bot signals** — strategies must be pure statistical / market-making / trend-following.
 3. **Market-make the SNACKPACKs and TRANSLATORs** for steady tick income.
 4. **Ignore** anything under 15% range with no obvious pair.
 
