@@ -140,6 +140,54 @@ Worst MM candidates: PEBBLES_XS, MICROCHIP_OVAL, ROBOT_IRONING — the trenders.
 
 The "dead products" turn out to be the goldmine. **Market-make SNACKPACKs with OBI-skewed quotes** — wide spread, deep book, stable microstructure signal, low vol means we don't get adversely selected. This is the highest-edge play in the round, *if* the strategy can quote 50 products simultaneously.
 
+### H7: Within-category cointegration (`round5_h7_cointegration.py`)
+
+For every pair within each category, fit `prod_b = β · prod_a + α` and compute residual half-life. Pair is tradeable if half-life is short and β is stable across days.
+
+**0 / 100 pairs meet the criteria** (half-life < 500 ticks AND β std < 0.5). Fastest-reverting pair (ROBOT_DISHES / LAUNDRY) has half-life ~847 ticks. **Static pair-trading is not the play this round.**
+
+### H8: PCA factor structure (`round5_h8_pca.py`)
+
+| PC | Variance explained |
+|---|---|
+| PC1 | 42.4% |
+| PC2 | 19.3% |
+| PC3 | 14.3% |
+| PC4 | 12.8% |
+| PC5 | 11.2% |
+
+Top PC1 loadings are **all PEBBLES** (XL +0.78, XS −0.47, S/M/L negative). Other 49 products load 0.001–0.005 on PC1. **PC1 is the PEBBLES factor, not a market factor.** Mean |PC1 loading| per category: PEBBLES = 0.391; everything else ≤ 0.005. PEBBLES is essentially its own market.
+
+### H9: Hurst exponent (`round5_h9_hurst.py`)
+
+| Class | Count |
+|---|---|
+| Mean-reverting (H<0.48) | **30 / 50** |
+| Random walk (H≈0.5) | 19 / 50 |
+| Trending (H>0.52) | 1 / 50 (PANEL_1X4) |
+
+**Most mean-reverting: PEBBLES_XL (H=0.424)** — formal confirmation of Kaushal's MR hypothesis. Then PEBBLES_XS (0.445), ROBOT_LAUNDRY (0.450), MICROCHIP_RECTANGLE (0.452), TRANSLATOR_GRAPHITE_MIST (0.453).
+
+### H10: Return autocorrelation (`round5_h10_autocorr.py`)
+
+| Product | lag-1 ACF |
+|---|---|
+| **ROBOT_DISHES** | **−0.222** (very strong reversal) |
+| ROBOT_IRONING | −0.121 |
+| OXYGEN_SHAKE_EVENING_BREATH | −0.118 |
+| OXYGEN_SHAKE_CHOCOLATE | −0.082 |
+| SNACKPACK_CHOCOLATE | −0.031 |
+
+**Zero products show momentum at lag 1.** Combined with H9, ROBOT_DISHES is a stronger MR target than anything in PEBBLES.
+
+### H11: Intraday volatility (`round5_h11_vol_intraday.py`)
+
+Per-category vol across 10 buckets within each day. Max/min ratio across all categories: 1.01 to 1.10 — **essentially flat**. No time-of-day pattern. Quote uniformly all day.
+
+### H12: Trade-size distribution (`round5_h12_trade_size.py`)
+
+Trade sizes are uniform across all products: median 2, p95 4, max 4. Tail ratio = 2.0 on every product. **Trade size carries no information** — won't substitute for missing trader IDs.
+
 ## Bots / trader IDs in R5
 
 **R5 trades CSVs have NO trader IDs.** Verified across all 35,385 trades on days 2/3/4 — buyer/seller fields are all empty (R4 had IDs on every row).
@@ -164,13 +212,13 @@ Implication: don't try to port `round4_v1_olivia.py` or P3 Olivia patterns. Lean
 The wiki promised *"strong patterns embedded in price movements"* — confirmed, but H1/H2/H3 sharpen what's tradeable:
 
 1. **Market-make all 5 SNACKPACKs with OBI-skewed quotes** — highest-edge play, microstructure signal is real and stable (H4 + H6).
-2. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative, no reversals (H2). Trend-follow with hard inventory caps.
-3. **Cleanest directional long**: GALAXY_SOUNDS_BLACK_HOLES — steady positive every day. Plus a wide spread (mm_score 145), so an MM with directional skew can earn both ways.
-4. **PANEL_1X4 ↔ PANEL_2X2 spread** — only viable basket relation; spread is small and mean-reverts (H3).
-5. **Avoid as static pair trades**: PEBBLES_XL/XS and MICROCHIP_SQUARE/OVAL — correlation breaks intraday (H1).
-6. **No within-category lead-lag** — don't try to trade follower products off leader signal (H5).
-7. **Risky directionals**: PEBBLES_XL, MICROCHIP_SQUARE — strong overall but reversal days hurt (H2).
-8. **No bot signals** — strategies must be pure statistical / market-making / trend-following.
+2. **Mean-revert ROBOT_DISHES on lag-1 reversal** — strongest single-product reversal (H10: −0.22), plus H9 confirms MR. Low-key the strongest unclaimed signal in the round.
+3. **PEBBLES_XL = MR (Kaushal's hypothesis confirmed)** — H9 Hurst 0.424 is the lowest of all 50 products. PCA confirms it's an idiosyncratic high-vol product, not market-driven.
+4. **Cleanest directional shorts**: PEBBLES_XS, MICROCHIP_OVAL — every day negative (H2). Trend-follow with hard inventory caps.
+5. **Cleanest directional long**: GALAXY_SOUNDS_BLACK_HOLES — steady positive every day (H2). Plus mm_score 145.
+6. **No tradeable pair trades** — H1 broke them within-day, H7 confirmed no fast cointegration anywhere. Static spread strategies are out.
+7. **No time-of-day adjustment needed** — H11 says quote uniformly.
+8. **No trade-size signal** — H12 says all sizes look the same. Don't try to substitute for missing trader IDs.
 3. **Market-make the SNACKPACKs and TRANSLATORs** for steady tick income.
 4. **Ignore** anything under 15% range with no obvious pair.
 
