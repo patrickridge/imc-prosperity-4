@@ -61,31 +61,26 @@ def z_score(value, mean, std):
     return (value - mean) / std
 
 
-# TODO (Patrick): implement the trading decision below.
-#
-# You have:
-#   z         — current z-score of the spread (+ve = wider than typical, -ve = tighter)
-#   long_leg_pos  — current position in PANEL_1X4
-#   short_leg_pos — current position in PANEL_2X2
-#
-# Return a target signed position for each leg (-POSITION_LIMIT..+POSITION_LIMIT).
-# Spread = PANEL_1X4 - PANEL_2X2, so to "short the spread" you sell 1X4 and buy 2X2.
-#
-# Decisions to make:
-#   1. ENTRY THRESHOLD: at what |z| do you open a position? Tighter (e.g. 1.0)
-#      means more trades / more noise; wider (e.g. 2.0) means cleaner signal but
-#      fewer fills.
-#   2. EXIT THRESHOLD: at what |z| do you close? Mean-reversion strategies
-#      typically exit at |z| ~ 0 to 0.5, but holding through zero captures
-#      slightly more.
-#   3. SIZING: full size at entry, or scale in as z grows? Scaling reduces
-#      entry timing risk but lowers PnL when the signal is sharp.
-#
-# Expected ~5–10 lines.
+# --- Starting values, NOT tuned. Tweak and backtest before trusting them. ---
+# ENTRY_Z 1.5 / EXIT_Z 0.5 are textbook defaults; the right values for this
+# specific spread depend on the half-life (~847 ticks per H7) and how much
+# noise we're willing to trade through. POSITION_SIZE = full limit is
+# aggressive — scaling in proportional to |z| is safer.
+# Run ./backtest.sh strategies/r5_panel_spread.py 5-2/5-3/5-4 after edits.
+ENTRY_Z = 1.5
+EXIT_Z = 0.5
+POSITION_SIZE = POSITION_LIMIT
+
+
 def decide_target_positions(z, long_leg_pos, short_leg_pos):
-    target_long_leg = 0
-    target_short_leg = 0
-    return target_long_leg, target_short_leg
+    holding = long_leg_pos != 0 or short_leg_pos != 0
+    if holding and abs(z) < EXIT_Z:
+        return 0, 0
+    if z > ENTRY_Z:
+        return -POSITION_SIZE, POSITION_SIZE
+    if z < -ENTRY_Z:
+        return POSITION_SIZE, -POSITION_SIZE
+    return long_leg_pos, short_leg_pos
 
 
 def orders_to_reach_target(product, current_pos, target_pos, bid, ask):
