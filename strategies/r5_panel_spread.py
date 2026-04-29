@@ -19,9 +19,11 @@ POSITION_LIMIT = 10
 WINDOW = 200
 MIN_HISTORY = 30
 QUOTE_SIZE = 5
-# WINDOW=200 was best in the sweep but day 3 still loses ~25k due to that
-# day's spread std being 4x days 2 and 4. A volatility-regime filter (skip
-# when rolling std > some threshold) would likely fix it. TODO follow-up.
+# Drift filter: don't open new positions when the spread has moved
+# strongly in one direction recently — that's the day 3 failure mode
+# (spread drifts -3500 across the day, every entry catches a falling knife).
+DRIFT_LOOKBACK = 100
+MAX_DRIFT = 250
 
 
 def best_bid_ask(order_depth):
@@ -74,13 +76,14 @@ EXIT_Z = 0.0
 POSITION_SIZE = POSITION_LIMIT
 
 
-def decide_target_positions(z, long_leg_pos, short_leg_pos):
+def decide_target_positions(z, long_leg_pos, short_leg_pos, recent_drift):
     holding = long_leg_pos != 0 or short_leg_pos != 0
     if holding and abs(z) < EXIT_Z:
         return 0, 0
-    if z > ENTRY_Z:
+    drifting = abs(recent_drift) > MAX_DRIFT
+    if z > ENTRY_Z and not drifting:
         return -POSITION_SIZE, POSITION_SIZE
-    if z < -ENTRY_Z:
+    if z < -ENTRY_Z and not drifting:
         return POSITION_SIZE, -POSITION_SIZE
     return long_leg_pos, short_leg_pos
 
@@ -111,14 +114,19 @@ class Trader:
                 spread = long_mid - short_mid
 
                 td["history"] = update_history(td.get("history", []), spread)
-                mean, std = rolling_mean_std(td["history"])
+                history = td["history"]
+                mean, std = rolling_mean_std(history)
                 z = z_score(spread, mean, std) if mean is not None else None
+                recent_drift = (
+                    history[-1] - history[-DRIFT_LOOKBACK]
+                    if len(history) >= DRIFT_LOOKBACK else 0
+                )
 
                 if z is not None:
                     long_pos = state.position.get(PRODUCT_LONG_LEG, 0)
                     short_pos = state.position.get(PRODUCT_SHORT_LEG, 0)
                     target_long, target_short = decide_target_positions(
-                        z, long_pos, short_pos
+                        z, long_pos, short_pos, recent_drift
                     )
                     long_orders = orders_to_reach_target(
                         PRODUCT_LONG_LEG, long_pos, target_long, long_bid, long_ask

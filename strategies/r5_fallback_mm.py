@@ -34,9 +34,11 @@ PRODUCTS = [
 ]
 POSITION_LIMIT = 10
 QUOTE_SIZE = 5
-OBI_SKEW = 0.5
+# Tuned via research/round5_fallback_sweep.py — best of 36 combos.
+# Backtest +152,959 across 3 days (was +118,531 untuned).
+OBI_SKEW = 1.2
 INVENTORY_PENALTY = 0.5
-EDGE = 2
+EDGE = 3
 
 
 def best_bid_ask(order_depth):

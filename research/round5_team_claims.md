@@ -16,7 +16,8 @@ update: edit this file directly when claiming or finishing a strategy
 | **GALAXY long bias** | Kaushal | — | researching BLACK_HOLES + others | — |
 | **OXYGEN long bias** | Kaushal | — | researching GARLIC + others | — |
 | **Manual** | Lev (suggested) | `manual/round5/sentiment_estimates.py` | numbers ready, needs submission | recommended +35,156 |
-| **Fallback MM** (30 unclaimed products) | Patrick | `strategies/r5_fallback_mm.py` | shipped | **+118,531** |
+| **Fallback MM** (30 unclaimed products) | Patrick | `strategies/r5_fallback_mm.py` | tuned via sweep | **+152,959** |
+| **Combined runner** (everything above) | Patrick | `strategies/r5_combined.py` | shipped | **+398,870** (the submission file) |
 
 ## Categories nobody is on
 
