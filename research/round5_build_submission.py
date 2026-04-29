@@ -27,6 +27,7 @@ SUB_MODULES = [
     ("panel_spread", "r5_panel_spread.py"),
     ("galaxy_oxygen", "galaxy_oxygen.py"),
     ("microchip", "r5_microchip_lead_lag.py"),
+    ("uv_visor", "uv_visor.py"),
     ("fallback_mm", "r5_fallback_mm.py"),
     ("pebbles", "pebbles.py"),
 ]

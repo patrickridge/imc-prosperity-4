@@ -18,8 +18,9 @@ from strategies.logger import Logger
 logger = Logger()
 
 PRODUCTS = [
-    "UV_VISOR_YELLOW", "UV_VISOR_AMBER", "UV_VISOR_ORANGE",
-    "UV_VISOR_RED", "UV_VISOR_MAGENTA",
+    # UV_VISOR_RED/AMBER/MAGENTA/ORANGE owned by uv_visor.py.
+    # YELLOW deliberately not traded there (was unstable historically), kept here.
+    "UV_VISOR_YELLOW",
     "TRANSLATOR_SPACE_GRAY", "TRANSLATOR_ASTRO_BLACK",
     "TRANSLATOR_ECLIPSE_CHARCOAL", "TRANSLATOR_GRAPHITE_MIST",
     "TRANSLATOR_VOID_BLUE",

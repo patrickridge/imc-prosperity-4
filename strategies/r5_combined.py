@@ -26,6 +26,7 @@ from strategies import (
     r5_fallback_mm,
     galaxy_oxygen,
     r5_microchip_lead_lag as r5_microchip,
+    uv_visor,
 )
 
 try:
@@ -51,6 +52,8 @@ r5_fallback_mm.logger = _Quiet()
 r5_microchip.logger = _Quiet()
 if hasattr(galaxy_oxygen, "logger"):
     galaxy_oxygen.logger = _Quiet()
+if hasattr(uv_visor, "logger"):
+    uv_visor.logger = _Quiet()
 if PEBBLES_OK and hasattr(pebbles_mod, "logger"):
     pebbles_mod.logger = _Quiet()
 
@@ -64,6 +67,7 @@ def build_sub_strategies():
         ("panel_spread", r5_panel_spread.Trader()),
         ("galaxy_oxygen", galaxy_oxygen.Trader()),
         ("microchip", r5_microchip.Trader()),
+        ("uv_visor", uv_visor.Trader()),
         ("fallback_mm", r5_fallback_mm.Trader()),
     ]
     if PEBBLES_OK:
