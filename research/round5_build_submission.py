@@ -26,6 +26,7 @@ SUB_MODULES = [
     ("robot_dishes", "r5_robot_dishes_mr.py"),
     ("panel_spread", "r5_panel_spread.py"),
     ("galaxy_oxygen", "galaxy_oxygen.py"),
+    ("microchip", "r5_microchip_lead_lag.py"),
     ("fallback_mm", "r5_fallback_mm.py"),
     ("pebbles", "pebbles.py"),
 ]

@@ -36,7 +36,7 @@ def run_backtest(strategy_path, day):
     cmd = ["python3", "-m", "backtester",
            str(strategy_path.relative_to(REPO)), f"5-{day}",
            "--data", "data/", "--no-out"]
-    out = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, timeout=120)
+    out = subprocess.run(cmd, cwd=REPO, capture_output=True, text=True, timeout=300)
     match = re.search(r"Total profit:\s*([-\d,]+)", out.stdout)
     if not match:
         return None

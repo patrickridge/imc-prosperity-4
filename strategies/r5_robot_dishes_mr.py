@@ -16,7 +16,7 @@ TREND_THRESHOLD = 8
 # (oscillating regime). Otherwise fall back to lag-1 fade for safety.
 REGIME_WINDOW = 30
 MR_REGIME_MAX_ABS_RETURN = 4
-MA_WINDOW = 15
+MA_WINDOW = 10
 MIN_HISTORY = 5
 
 
