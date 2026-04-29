@@ -24,6 +24,7 @@ from strategies import (
     r5_robot_dishes_mr,
     r5_panel_spread,
     r5_fallback_mm,
+    galaxy_oxygen,
 )
 
 try:
@@ -46,6 +47,8 @@ r5_snackpack_mm.logger = _Quiet()
 r5_robot_dishes_mr.logger = _Quiet()
 r5_panel_spread.logger = _Quiet()
 r5_fallback_mm.logger = _Quiet()
+if hasattr(galaxy_oxygen, "logger"):
+    galaxy_oxygen.logger = _Quiet()
 if PEBBLES_OK and hasattr(pebbles_mod, "logger"):
     pebbles_mod.logger = _Quiet()
 
@@ -57,6 +60,7 @@ def build_sub_strategies():
         ("snackpack", r5_snackpack_mm.Trader()),
         ("robot_dishes", r5_robot_dishes_mr.Trader()),
         ("panel_spread", r5_panel_spread.Trader()),
+        ("galaxy_oxygen", galaxy_oxygen.Trader()),
         ("fallback_mm", r5_fallback_mm.Trader()),
     ]
     if PEBBLES_OK:
