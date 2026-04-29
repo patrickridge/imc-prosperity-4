@@ -19,6 +19,9 @@ POSITION_LIMIT = 10
 WINDOW = 200
 MIN_HISTORY = 30
 QUOTE_SIZE = 5
+# WINDOW=200 was best in the sweep but day 3 still loses ~25k due to that
+# day's spread std being 4x days 2 and 4. A volatility-regime filter (skip
+# when rolling std > some threshold) would likely fix it. TODO follow-up.
 
 
 def best_bid_ask(order_depth):
@@ -61,14 +64,13 @@ def z_score(value, mean, std):
     return (value - mean) / std
 
 
-# --- Starting values, NOT tuned. Tweak and backtest before trusting them. ---
-# ENTRY_Z 1.5 / EXIT_Z 0.5 are textbook defaults; the right values for this
-# specific spread depend on the half-life (~847 ticks per H7) and how much
-# noise we're willing to trade through. POSITION_SIZE = full limit is
-# aggressive — scaling in proportional to |z| is safer.
-# Run ./backtest.sh strategies/r5_panel_spread.py 5-2/5-3/5-4 after edits.
-ENTRY_Z = 1.5
-EXIT_Z = 0.5
+# --- Tuned via research/round5_panel_sweep.py (36 combos, 3 days). ---
+# Best config: ENTRY_Z=2.5, EXIT_Z=0.0, WINDOW=200 -> +7,280 across 3 days
+# (was -46,000 with the textbook starter values).
+# Day-by-day: +10,425 / -25,003 / +21,858. Day 3 still hurts because that
+# day's spread std is 4x the others. Volatility-regime filter as TODO.
+ENTRY_Z = 2.5
+EXIT_Z = 0.0
 POSITION_SIZE = POSITION_LIMIT
 
 

@@ -11,7 +11,7 @@ update: edit this file directly when claiming or finishing a strategy
 | **PEBBLES** | Kaushal | `strategies/pebbles.py` | live, iterating | ? (not run by me) |
 | **SNACKPACK** (5 products) | Patrick | `strategies/r5_snackpack_mm.py` | tuned, ready | **+14,640** |
 | **ROBOT_DISHES** | Patrick | `strategies/r5_robot_dishes_mr.py` | v2 regime switch | **+14,495** |
-| **PANEL_1X4 ↔ 2X2 spread** | Patrick | `strategies/r5_panel_spread.py` | scaffolded, params untuned | sweep running |
+| **PANEL_1X4 ↔ 2X2 spread** | Patrick | `strategies/r5_panel_spread.py` | tuned via sweep | **+7,280** (day 3 hurts: -25k) |
 | **MICROCHIP** | Kaushal | — | researching, possibly lead-lag | — |
 | **GALAXY long bias** | Kaushal | — | researching BLACK_HOLES + others | — |
 | **OXYGEN long bias** | Kaushal | — | researching GARLIC + others | — |
