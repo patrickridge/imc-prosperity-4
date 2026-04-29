@@ -1,52 +1,67 @@
 ---
-product: Round 5 Manual — recommended submission
-date: 2026-04-28
-status: draft for team review
+purpose: Round 5 manual submission — values entered on IMC site
+date: 2026-04-30
+status: submitted
 ---
 
-## Recommended submission (BASE case)
+## Submitted values
 
-| Good | Direction | volume_pct | Rationale |
-|---|---|---|---|
-| LAVA_FOUNTAIN_PEN | LONG  | **+1.88%** | hot drop launch + merger; niche, possibly priced in |
-| THERMALITE_CORE   | LONG  | **+7.50%** | only headline with a number — 1.42M → 3.89M users (2.7×) |
-| SCORIA_PASTE      | LONG  | **+3.75%** | influencer urging stockpile before "unaffordable" |
-| VOLCANIC_INCENSE  | LONG  | **+3.75%** | Whiff Nostralico publicly accelerating buys |
-| SULFUR_LTD        | LONG  | **+5.62%** | mechanical index inclusion → forced rebalance buying |
-| OBSIDIAN_CUTLERY  | SHORT | **−3.75%** | production halted, contamination |
-| PYROFLEX_CELL     | SHORT | **−5.62%** | tax cut canceled, levy doubles |
-| ASHES_OF_THE_PHOENIX | SHORT | **−3.75%** | PR scandal (PR scandals often fade) |
-| LAVA_CAKES        | SHORT | **−5.62%** | actual lava found + lawsuits |
+These were entered into the Manual Challenge form on prosperity.imc.com on 2026-04-30 and confirmed accepted.
 
-**Budget used: 41.2%** (well under 100%)
-**Expected PnL: +35,156**
+| Tradable good | Buy/Sell | Percentage | Investment | Fee |
+|---|---|---:|---:|---:|
+| Obsidian cutlery | Sell | **8%** | 80,000 | 6,400 |
+| Pyroflex cells | Sell | **6%** | 60,000 | 3,600 |
+| Thermalite core | Buy | **9%** | 90,000 | 8,100 |
+| Lava cake | Sell | **11%** | 110,000 | 12,100 |
+| Magma ink | Buy | **2%** | 20,000 | 400 |
+| Scoria paste | — | (skipped) | — | — |
+| Ashes of the Phoenix | Sell | **8%** | 80,000 | 6,400 |
+| Volcanic incense | — | (skipped) | — | — |
+| Sulfur reactor | Buy | **6%** | 60,000 | 3,600 |
+| **Total** | | **50%** | **500,000** | **40,600** |
 
-## Sensitivity table
+Expected PnL after fees: **~+65,000**.
 
-| Scenario | r_i scale | Budget used | Expected PnL |
-|---|---|---|---|
-| Aggressive — narratives play out fully | 1.5× base | 61.9% | +79,102 |
-| **BASE — recommended** | 1.0× base | **41.2%** | **+35,156** |
-| Conservative — most news is priced in | 0.5× base | 20.6% | +8,789 |
+## Reasoning per good
 
-## Why BASE, not Aggressive
+The values come from `manual/round5/allocate.py` `expected_returns` dict. Each `r_i` is the expected % move; the allocator computes `w* = r_i / 2` (the profit-maximising weight on a quadratic-fee curve), caps at 25% per good, and applies a 75% hedge factor (P3 hedgehogs hit 65% of optimal because they overestimated, so hedging reduces tail risk). Whole-number rounding for the IMC form.
 
-P3 hedgehogs scored **126,751 / 194,522** optimal (65%) on this exact challenge type. Their post-mortem: they overestimated some moves (Haystacks, Solar Panels) and got burned. We hedged below optimal in [allocate.py](allocate.py) (75% hedge factor + 25% single-position cap) precisely to avoid that trap. Aggressive estimates re-introduce the risk.
+| Good | r_i used | Why |
+|---|---|---|
+| Lava cake | **−30%** | Actual lava found in product + lawsuits piling up = sustained drag, not a news scandal that fades. Strongest consensus short. |
+| Thermalite core | **+25%** | Only headline with hard numbers (1.42M → 3.89M users projected, 2.7×). Quantitative + obvious bullish read. |
+| Obsidian cutlery | **−20%** | Production halted, contamination + evacuation. Clear consensus short. |
+| Ashes of Phoenix | **−20%** | PR scandal from resurfaced video showing phoenix burned. PR scandals can fade but consensus is short. |
+| Pyroflex cells | **−15%** | Tax cut canceled, levy doubles → demand drops. Consensus short. |
+| Sulfur reactor | **+15%** | Mechanical index inclusion (Elemental Index 118) → forced rebalance buying by index funds. |
+| Magma ink | **+5%** | Hot drop launched after Stip + Splatter merger. Already news-of-the-day so partly priced in. Small position. |
+| Scoria paste | **0%** | Pure influencer hype (Lava D. Ray). Crowd direction unpredictable, skip. |
+| Volcanic incense | **0%** | Pure influencer hype (Whiff Nostralico). Same as Scoria, skip. |
 
-If the team has stronger conviction on a specific story (e.g., Sulfur Ltd. index inclusion has a hard date), edit [sentiment_estimates.py](sentiment_estimates.py) and re-run. The framework is designed for last-minute updates.
+## Why these specific weights, not others
 
-## How to submit
+The wiki update on 29/04 clarified: *"crowd consensus moves the realised return within the range"*. So:
 
-Re-run after any edits:
+- **Going with the consensus amplifies profit.** Lava cake / Thermalite / Sulfur are consensus trades — everyone reads the same news, the crowd will push the realised return in our direction.
+- **Going against subtle stories is risky.** Influencer hype (Scoria, Volcanic) is a coin flip on whether the crowd believes it.
+- **Magma ink is small** because the launch event already happened — likely priced in by the time we trade.
+
+## How to upload bigger sizes if you want more PnL
+
+Run the allocator with custom values:
 
 ```
-python3 manual/round5/sentiment_estimates.py
+python3 manual/round5/allocate.py
 ```
 
-Type the `volume_pct` numbers from the BASE case into the Manual Challenge Overview window. **Use signed values** (negative for shorts). Last submission wins, so iterate freely until the round closes.
+Or edit `expected_returns` in `manual/round5/allocate.py` (or `sentiment_estimates.py` for the BASE/AGGRESSIVE/CONSERVATIVE scenarios).
 
-## What could change the call
+The conservative cap is 25% per good and a 75% hedge factor. To go bigger, edit `MAX_SINGLE_POSITION` and `HEDGE_FACTOR` in `allocate.py`. Going to 100% hedge (no hedge) on the same `r_i` values gives ~+90k expected, but adds risk if the sentiment estimates are off.
 
-- Sulfur index inclusion date confirmed before/after the trading day → resize accordingly
-- New news drops between now and round close → re-estimate that good
-- Team disagrees on direction of any single story → easy to flip in `sentiment_estimates.py`
+Last submission wins on the IMC site — you can resubmit until round close.
+
+## Wiki update history
+
+- 2026-04-29 12:00 CEST: "Sulfur Ltd." renamed to "Sulfur Reactor" in the Ashflow Alpha visual. Mechanism unchanged — still mechanical index inclusion.
+- "Forever Feathers" = "Eternal Feathers" — typo correction, no impact.

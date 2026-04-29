@@ -37,6 +37,40 @@ That's 5/50 still trading at zero in the combined runner.
 4. Run `python3 research/round5_build_submission.py` to refresh the bundle
 5. Backtest the bundle to confirm it still runs: `./backtest.sh submissions/r5_combined.py 5-2`
 
-## Submission
+## Submission status (2026-04-30)
 
-`submissions/r5_combined.py` is the file to upload to the IMC site. Regenerate after any strategy change with the build command above.
+- **Algo:** uploaded to IMC, simulator showed **+544,702**.
+- **Manual:** submitted on IMC site, 50% budget used, ~+65,000 expected. Values in `manual/round5/r5_manual_submission.md`.
+
+Last submission wins on the IMC site for both — reupload anytime before round close.
+
+## Optimisation status
+
+| Strategy | Tuned? | How |
+|---|---|---|
+| SNACKPACK | ✅ swept | `research/round5_snackpack_sweep.py` (32 combos) |
+| ROBOT_DISHES | ✅ swept | `research/round5_robot_sweep.py` (36 combos) |
+| PANEL spread | ✅ swept + drift filter | `research/round5_panel_sweep.py` (36 combos) |
+| Fallback MM | ✅ swept | `research/round5_fallback_sweep.py` (36 combos) |
+| MICROCHIP | sweep harness exists, run pending | `research/round5_microchip_sweep.py` |
+| UV_VISOR (Kaushal) | not swept by Patrick | — |
+| Galaxy + Oxygen (Kaushal) | not swept by Patrick | — |
+| PEBBLES (Kaushal) | not swept by Patrick | — Kaushal flagged it as roughest, biggest upside |
+
+To run any sweep: `python3 research/round5_<strategy>_sweep.py` — outputs sorted top-10. Apply the best params to the corresponding `strategies/r5_*.py` file and rerun the bundler.
+
+## Regenerate the submission bundle
+
+```
+python3 research/round5_build_submission.py
+```
+
+Reads `strategies/r5_combined.py` SUB_STRATEGIES list, embeds each sub-strategy's source as base64 in a single file at `submissions/r5_combined.py`. Verify with:
+
+```
+./backtest.sh submissions/r5_combined.py 5-2
+./backtest.sh submissions/r5_combined.py 5-3
+./backtest.sh submissions/r5_combined.py 5-4
+```
+
+Should match the dev runner (`strategies/r5_combined.py`) exactly.
