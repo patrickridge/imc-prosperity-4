@@ -19,15 +19,15 @@ HEDGE_FACTOR = 0.75         # take 75% of theoretical optimal (P3 lesson)
 # P3 hedgehogs used ranges of ±5% to ±50%. Reference their table in
 # docs/reference/prosperity-3-hedgehogs.md for calibration.
 expected_returns = {
-    "LAVA_FOUNTAIN_PEN":   None,  # successful merger + hot drop launch
-    "THERMALITE_CORE":     None,  # users 1.42M -> 3.89M (high-conviction)
-    "SCORIA_PASTE":        None,  # Lava D. Ray urges stockpiling
-    "VOLCANIC_INCENSE":    None,  # Whiff Nostralico calling buyers in
-    "SULFUR_LTD":          None,  # added to Elemental Index 118 (high-conviction)
-    "OBSIDIAN_CUTLERY":    None,  # production halted, contamination
-    "PYROFLEX_CELL":       None,  # tax cut canceled, levy doubles
-    "ASHES_OF_THE_PHOENIX": None, # PR scandal, resurfaced video
-    "LAVA_CAKES":          None,  # actual lava found, lawsuits piling up
+    "LAVA_FOUNTAIN_PEN":    0.05,
+    "THERMALITE_CORE":      0.25,
+    "SCORIA_PASTE":         0.00,
+    "VOLCANIC_INCENSE":     0.00,
+    "SULFUR_LTD":           0.15,
+    "OBSIDIAN_CUTLERY":    -0.20,
+    "PYROFLEX_CELL":       -0.15,
+    "ASHES_OF_THE_PHOENIX": -0.20,
+    "LAVA_CAKES":          -0.30,
 }
 
 
