@@ -18,9 +18,12 @@ PRODUCTS = [
 ]
 POSITION_LIMIT = 10
 QUOTE_SIZE = 5
-OBI_SKEW = 1.0
-INVENTORY_PENALTY = 0.5
-EDGE = 2
+# Tuned via research/round5_microchip_sweep.py (36 combos).
+# Best: OBI=1.5, INV=0.2, EDGE=3 -> +45,264 (was +15,461 untuned).
+# Day-by-day +20,344 / +5,765 / +19,155, all positive.
+OBI_SKEW = 1.5
+INVENTORY_PENALTY = 0.2
+EDGE = 3
 
 
 def best_bid_ask(order_depth):
