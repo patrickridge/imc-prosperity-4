@@ -74,21 +74,21 @@ class Trader:
     ]
 
     # Always-on verified core.
-    ENABLE_BLACK = True
+    ENABLE_BLACK = False
     ENABLE_GARLIC = True
     BLACK_TARGET = 10
     GARLIC_TARGET = 10
 
     # v9 fast-adaptive SOLAR_FLAMES: faster/stricter breakdown trigger.
     # CSV sim: w=1500, drop<-400 improved versus v8 w=2000/drop<-300.
-    ENABLE_SOLAR_FLAMES_CRASH_SHORT = True
+    ENABLE_SOLAR_FLAMES_CRASH_SHORT = False
     SOLAR_FLAMES_WINDOW = 150
     SOLAR_FLAMES_ENTRY_DROP = -40.0
     SOLAR_FLAMES_TARGET = -10
 
     # v5 main new overlay: buy DARK_MATTER after large local selloff.
     # This is mean reversion, not a trend-follow long.
-    ENABLE_DARK_MATTER_DIP_BUY = True
+    ENABLE_DARK_MATTER_DIP_BUY = False
     DARK_MATTER_WINDOW = 150
     DARK_MATTER_ENTRY_DROP = -20.0
     # v9: also allow delayed long carry after 5000 ticks.
@@ -103,7 +103,7 @@ class Trader:
     PLANETARY_RINGS_ENTRY_DROP = -15.0
     PLANETARY_RINGS_TARGET = -10
 
-    ENABLE_SOLAR_WINDS_BREAKDOWN_SHORT = True
+    ENABLE_SOLAR_WINDS_BREAKDOWN_SHORT = False
     SOLAR_WINDS_WINDOW = 500
     SOLAR_WINDS_ENTRY_DROP = -2.5
     SOLAR_WINDS_TARGET = -10
@@ -117,7 +117,7 @@ class Trader:
     #   CHOCOLATE long after 4000 ticks: +5.34k / +3.58k / +9.38k
     #   EVENING_BREATH short after 3000 ticks: +13.24k / +0.74k / +4.04k
     #   MORNING_BREATH long after 8000 ticks: +3.36k / +7.82k / +2.18k
-    ENABLE_CHOCOLATE_DELAYED_LONG = True
+    ENABLE_CHOCOLATE_DELAYED_LONG = False
     CHOCOLATE_WARMUP = 400
     CHOCOLATE_TARGET = 10
 

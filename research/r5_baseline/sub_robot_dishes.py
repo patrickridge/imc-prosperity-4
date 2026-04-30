@@ -78,30 +78,4 @@ def quote_orders(fair, position):
 
 class Trader:
     def run(self, state: TradingState):
-        st = load_state(state.traderData)
-        history = st.get("history", [])
-        orders = {}
-
-        order_depth = state.order_depths.get(PRODUCT)
-        if order_depth is None:
-            return orders, 0, json.dumps(st)
-
-        bid, ask = best_bid_ask(order_depth)
-        if bid is None or ask is None:
-            return orders, 0, json.dumps(st)
-
-        mid = (bid + ask) / 2
-        position = state.position.get(PRODUCT, 0)
-        history = update_history(history, mid, MA_WINDOW + REGIME_WINDOW)
-
-        fair = None
-        if is_mr_regime(history):
-            fair = fair_from_ma(history)
-        elif len(history) >= 2:
-            fair = fair_from_lag1(mid, history[-2])
-
-        if fair is not None:
-            orders[PRODUCT] = quote_orders(fair, position)
-
-        st["history"] = history
-        return orders, 0, json.dumps(st)
+        return {}, 0, state.traderData or ""
