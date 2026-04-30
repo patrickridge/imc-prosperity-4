@@ -1,4 +1,39 @@
-# Round 5 OOS Feedback — Log 575780 (Day 4)
+# R5 Strategy Development
+
+## Workflow
+```
+1. Edit source:        research/r5_eda/sub_*.py
+2. Build bundle:       python3 research/build_r5_submission.py
+3. Wrap for upload:    ./submit.sh strategies/round5_v9_patched.py
+4. Upload:             submissions/round5_v9_patched.py → prosperity.imc.com
+5. Download OOS zip:   drop in strategies/ or logs/
+6. Diagnose:           python3 utils/analyze_logs.py <new.zip>
+7. Diff vs previous:   python3 utils/analyze_logs.py <old.zip> <new.zip>
+8. Fix worst bleeder, go to step 1
+```
+
+Rule: change ONE sub-strategy per iteration so the diff is clean.
+
+## Baseline
+- 575780.zip = last confirmed OOS (50,082 PnL)
+- Decoded: research/decoded_575780/
+
+## Current submission (v9)
+Changes vs 575780:
+- snackpack: added RASPBERRY, per-product edge (CHOC/PIST=7, VAN/STRAW/RASP=8)
+- robot_dishes: re-enabled (was dead code returning empty)
+- galaxy_oxygen: fixed BLACK limit bug (60→10), all thresholds ÷10
+- panel_spread, microchip, uv_visor, fallback_mm, pebbles: unchanged
+
+## Key files
+- research/r5_eda/sub_*.py — source of truth (8 sub-strategies)
+- strategies/bundle_template.py — combiner boilerplate (don't edit)
+- research/build_r5_submission.py — build script
+- utils/analyze_logs.py — OOS log analysis + diff tool
+
+---
+
+# OOS Feedback — Log 575780 (Day 4)
 
 **Total PnL: +50,082**
 
