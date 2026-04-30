@@ -21,6 +21,11 @@ def add_trade_markers(fig, trades_df, normalization, prices_df=None):
     buys = df[df["side"] == "buy"]
     sells = df[df["side"] == "sell"]
 
+    def custom_for(subset):
+        buyer = subset["buyer"].fillna("?") if "buyer" in subset.columns else ["?"] * len(subset)
+        seller = subset["seller"].fillna("?") if "seller" in subset.columns else ["?"] * len(subset)
+        return list(zip(subset["quantity"], buyer, seller))
+
     if not buys.empty:
         fig.add_trace(go.Scattergl(
             x=buys["timestamp"], y=buys["plot_price"],
@@ -28,8 +33,8 @@ def add_trade_markers(fig, trades_df, normalization, prices_df=None):
             marker=dict(symbol=BUY_MARKER, size=buys["quantity"] * TRADE_SIZE_SCALE,
                         color=BUY_COLOR, opacity=0.8, line=dict(width=1, color="white")),
             name="Buy trades",
-            customdata=buys["quantity"],
-            hovertemplate="t=%{x}<br>price=%{y:.1f}<br>qty=%{customdata}<extra></extra>",
+            customdata=custom_for(buys),
+            hovertemplate="t=%{x}<br>price=%{y:.1f}<br>qty=%{customdata[0]}<br>%{customdata[1]} ← %{customdata[2]}<extra></extra>",
         ))
 
     if not sells.empty:
@@ -39,8 +44,8 @@ def add_trade_markers(fig, trades_df, normalization, prices_df=None):
             marker=dict(symbol=SELL_MARKER, size=sells["quantity"] * TRADE_SIZE_SCALE,
                         color=SELL_COLOR, opacity=0.8, line=dict(width=1, color="white")),
             name="Sell trades",
-            customdata=sells["quantity"],
-            hovertemplate="t=%{x}<br>price=%{y:.1f}<br>qty=%{customdata}<extra></extra>",
+            customdata=custom_for(sells),
+            hovertemplate="t=%{x}<br>price=%{y:.1f}<br>qty=%{customdata[0]}<br>%{customdata[1]} ← %{customdata[2]}<extra></extra>",
         ))
 
     return fig

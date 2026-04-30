@@ -36,7 +36,7 @@ class VevSymbolConfig:
 _VEV_CONFIG: Dict[str, VevSymbolConfig] = {
     "VEV_4000": VevSymbolConfig(
         strike=4000.0, prior_iv=0.828,
-        bid_edge=8.0, exit_edge=12.0, exit_position=80,
+        bid_edge=9.5, exit_edge=12.0, exit_position=80,
         lots=20, max_overpricing=0.0,
     ),
     "VEV_5200": VevSymbolConfig(

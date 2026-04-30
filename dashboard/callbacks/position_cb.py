@@ -4,7 +4,20 @@ from dashboard.data_loader import load_backtest_log, get_position_over_time
 from dashboard.constants import POSITION_COLOR, SMALL_CHART_HEIGHT
 
 
-POSITION_LIMIT = 80
+POSITION_LIMITS = {
+    "ASH_COATED_OSMIUM": 80,
+    "INTARIAN_PEPPER_ROOT": 80,
+    "HYDROGEL_PACK": 200,
+    "VELVETFRUIT_EXTRACT": 200,
+    "VEV_4000": 300, "VEV_4500": 300, "VEV_5000": 300, "VEV_5100": 300,
+    "VEV_5200": 300, "VEV_5300": 300, "VEV_5400": 300, "VEV_5500": 300,
+    "VEV_6000": 300, "VEV_6500": 300,
+}
+DEFAULT_LIMIT = 200
+
+
+def position_limit_for(product):
+    return POSITION_LIMITS.get(product, DEFAULT_LIMIT)
 
 
 def register_position_callbacks(app):
@@ -42,10 +55,11 @@ def register_position_callbacks(app):
             hovertemplate="t=%{x}<br>pos=%{y}<extra></extra>",
         ))
 
-        fig.add_hline(y=POSITION_LIMIT, line_dash="dash", line_color="red",
-                      annotation_text=f"+{POSITION_LIMIT} limit")
-        fig.add_hline(y=-POSITION_LIMIT, line_dash="dash", line_color="red",
-                      annotation_text=f"-{POSITION_LIMIT} limit")
+        limit = position_limit_for(product)
+        fig.add_hline(y=limit, line_dash="dash", line_color="red",
+                      annotation_text=f"+{limit} limit")
+        fig.add_hline(y=-limit, line_dash="dash", line_color="red",
+                      annotation_text=f"-{limit} limit")
         fig.add_hline(y=0, line_color="#ccc", line_width=0.5)
 
         return fig

@@ -34,6 +34,10 @@ def build_sidebar():
                 "Backtest Log", "backtest-selector",
                 logs, logs[0] if logs else None,
             ),
+            _dropdown_section(
+                "Compare with", "backtest-compare",
+                logs, None,
+            ),
         ],
     )
 
