@@ -19,6 +19,23 @@ LIMITS = {
     "VEV_6500": 300,
 }
 
+# Round 5: 50 new products in 10 groups of 5. Default limit 100 until wiki confirms.
+_R5_DEFAULT_LIMIT = 100
+for _grp, _vars in [
+    ("GALAXY_SOUNDS", ["BLACK_HOLES", "DARK_MATTER", "PLANETARY_RINGS", "SOLAR_FLAMES", "SOLAR_WINDS"]),
+    ("MICROCHIP", ["CIRCLE", "OVAL", "RECTANGLE", "SQUARE", "TRIANGLE"]),
+    ("OXYGEN_SHAKE", ["CHOCOLATE", "EVENING_BREATH", "GARLIC", "MINT", "MORNING_BREATH"]),
+    ("PANEL", ["1X2", "1X4", "2X2", "2X4", "4X4"]),
+    ("PEBBLES", ["XS", "S", "M", "L", "XL"]),
+    ("ROBOT", ["DISHES", "IRONING", "LAUNDRY", "MOPPING", "VACUUMING"]),
+    ("SLEEP_POD", ["COTTON", "LAMB_WOOL", "NYLON", "POLYESTER", "SUEDE"]),
+    ("SNACKPACK", ["CHOCOLATE", "PISTACHIO", "RASPBERRY", "STRAWBERRY", "VANILLA"]),
+    ("TRANSLATOR", ["ASTRO_BLACK", "ECLIPSE_CHARCOAL", "GRAPHITE_MIST", "SPACE_GRAY", "VOID_BLUE"]),
+    ("UV_VISOR", ["AMBER", "MAGENTA", "ORANGE", "RED", "YELLOW"]),
+]:
+    for _v in _vars:
+        LIMITS[f"{_grp}_{_v}"] = _R5_DEFAULT_LIMIT
+
 
 @dataclass
 class PriceRow:
