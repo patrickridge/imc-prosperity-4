@@ -1,37 +1,24 @@
-"""Multi-product fallback market-maker for R5.
-
-Quotes a basket of 'unclaimed' R5 products with simple OBI-skewed MM.
-Covers UV_VISORs, TRANSLATORs, SLEEP_PODs, the rest of OXYGEN_SHAKEs and
-GALAXY_SOUNDs, and 4 ROBOTs (excluding DISHES which has its own strategy).
-
-Skips products that other strategies own:
-  - SNACKPACKs (r5_snackpack_mm.py)
-  - ROBOT_DISHES (r5_robot_dishes_mr.py)
-  - PEBBLES (pebbles.py)
-  - PANEL_1X4 / PANEL_2X2 (r5_panel_spread.py)
-  - MICROCHIPs (Kaushal researching)
-  - GALAXY_SOUNDS_BLACK_HOLES, OXYGEN_SHAKE_GARLIC (Kaushal researching)
-"""
 
 
 PRODUCTS = [
-    # UV_VISOR_RED/AMBER/MAGENTA/ORANGE owned by uv_visor.py.
-    # YELLOW deliberately not traded there (was unstable historically), kept here.
-    "TRANSLATOR_ASTRO_BLACK",
-    "TRANSLATOR_ECLIPSE_CHARCOAL", "TRANSLATOR_GRAPHITE_MIST",
-    "TRANSLATOR_VOID_BLUE",
-    "SLEEP_POD_SUEDE", "SLEEP_POD_POLYESTER",
-    "SLEEP_POD_NYLON", "SLEEP_POD_COTTON",
-        "ROBOT_VACUUMING", "ROBOT_MOPPING", "ROBOT_LAUNDRY",
-    "PANEL_2X4", "PANEL_4X4",
-]
+    "SNACKPACK_VANILLA",
+    "SNACKPACK_PISTACHIO",
+    "SNACKPACK_STRAWBERRY",
+    ]
 POSITION_LIMIT = 10
 QUOTE_SIZE = 5
-# Tuned via research/round5_fallback_sweep.py — best of 36 combos.
-# Backtest +152,959 across 3 days (was +118,531 untuned).
 OBI_SKEW = 1.2
-INVENTORY_PENALTY = 0.5
-EDGE = 3
+INVENTORY_PENALTY = 0.8
+_EDGE_PER_PRODUCT = {
+    'SNACKPACK_VANILLA': 8,
+    'SNACKPACK_STRAWBERRY': 8,
+    'SNACKPACK_RASPBERRY': 8,
+    'SNACKPACK_CHOCOLATE': 7,
+    'SNACKPACK_PISTACHIO': 7,
+}
+
+def _edge_for(product):
+    return _EDGE_PER_PRODUCT.get(product, 4)
 
 
 def best_bid_ask(order_depth):
@@ -53,7 +40,8 @@ def fair_value(bid, ask, obi, position):
     mid = (bid + ask) / 2
     spread = ask - bid
     skew = OBI_SKEW * obi * (spread / 2)
-    return mid + skew - INVENTORY_PENALTY * position
+    inventory_adjust = -INVENTORY_PENALTY * position
+    return mid + skew + inventory_adjust
 
 
 def quote_orders(product, fair, position):
@@ -62,9 +50,9 @@ def quote_orders(product, fair, position):
 
     orders = []
     if buy_size > 0:
-        orders.append(Order(product, int(fair - EDGE), buy_size))
+        orders.append(Order(product, int(fair - _edge_for(product)), buy_size))
     if sell_size > 0:
-        orders.append(Order(product, int(fair + EDGE), -sell_size))
+        orders.append(Order(product, int(fair + _edge_for(product)), -sell_size))
     return orders
 
 

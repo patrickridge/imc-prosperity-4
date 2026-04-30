@@ -1,37 +1,23 @@
-"""Multi-product fallback market-maker for R5.
+"""MICROCHIP coverage — OBI-skewed market making on all 5 products.
 
-Quotes a basket of 'unclaimed' R5 products with simple OBI-skewed MM.
-Covers UV_VISORs, TRANSLATORs, SLEEP_PODs, the rest of OXYGEN_SHAKEs and
-GALAXY_SOUNDs, and 4 ROBOTs (excluding DISHES which has its own strategy).
-
-Skips products that other strategies own:
-  - SNACKPACKs (r5_snackpack_mm.py)
-  - ROBOT_DISHES (r5_robot_dishes_mr.py)
-  - PEBBLES (pebbles.py)
-  - PANEL_1X4 / PANEL_2X2 (r5_panel_spread.py)
-  - MICROCHIPs (Kaushal researching)
-  - GALAXY_SOUNDS_BLACK_HOLES, OXYGEN_SHAKE_GARLIC (Kaushal researching)
+H5b finding (CIRCLE leads SQUARE/TRIANGLE/OVAL at lags 50-200, corr ~0.05)
+is too weak to trade directly — backtested at -80k net. MICROCHIPs have
+moderate spreads (mm_score ~50-60) so simple MM works better.
 """
 
 
 PRODUCTS = [
-    # UV_VISOR_RED/AMBER/MAGENTA/ORANGE owned by uv_visor.py.
-    # YELLOW deliberately not traded there (was unstable historically), kept here.
-    "TRANSLATOR_ASTRO_BLACK",
-    "TRANSLATOR_ECLIPSE_CHARCOAL", "TRANSLATOR_GRAPHITE_MIST",
-    "TRANSLATOR_VOID_BLUE",
-    "SLEEP_POD_SUEDE", "SLEEP_POD_POLYESTER",
-    "SLEEP_POD_NYLON", "SLEEP_POD_COTTON",
-        "ROBOT_VACUUMING", "ROBOT_MOPPING", "ROBOT_LAUNDRY",
-    "PANEL_2X4", "PANEL_4X4",
+    "MICROCHIP_CIRCLE",
+    "MICROCHIP_OVAL",
+    "MICROCHIP_SQUARE",
+    "MICROCHIP_RECTANGLE",
+    "MICROCHIP_TRIANGLE",
 ]
 POSITION_LIMIT = 10
 QUOTE_SIZE = 5
-# Tuned via research/round5_fallback_sweep.py — best of 36 combos.
-# Backtest +152,959 across 3 days (was +118,531 untuned).
-OBI_SKEW = 1.2
+OBI_SKEW = 1.0
 INVENTORY_PENALTY = 0.5
-EDGE = 3
+EDGE = 2
 
 
 def best_bid_ask(order_depth):
@@ -73,16 +59,15 @@ class Trader:
         orders = {}
 
         for product in PRODUCTS:
-            order_depth = state.order_depths.get(product)
-            if order_depth is None:
+            depth = state.order_depths.get(product)
+            if depth is None:
                 continue
-
-            bid, ask = best_bid_ask(order_depth)
+            bid, ask = best_bid_ask(depth)
             if bid is None or ask is None:
                 continue
 
             position = state.position.get(product, 0)
-            obi = order_book_imbalance(order_depth, bid, ask)
+            obi = order_book_imbalance(depth, bid, ask)
             fair = fair_value(bid, ask, obi, position)
             orders[product] = quote_orders(product, fair, position)
 
