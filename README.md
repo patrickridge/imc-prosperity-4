@@ -8,6 +8,16 @@ This toolkit is open for everyone to use, modify, and share. If you're intereste
 
 Lev Rozanov, Patrick Ridge, Kaushal, Kieran Chung, George
 
+## Results
+
+Final standing: **#1303 of 18,803 teams (top 7%), #141 in country**, with a total PnL of 171,624 XIREC.
+
+The final round is worth being honest about, because it carries the most useful lesson in the repo. Our round 5 algorithm backtested at +550k on the three provided days, and IMC's own upload simulator agreed — but both replay the same historical days the strategies were calibrated on. On the unseen live day the directional books (trend-following longs, relative-value on the pebbles family) gave back what the historical trends had promised, and the round came in at −68.7k. The market-making components held up fine; the directional bets didn't survive out of sample.
+
+The manual challenge went the other way: our news-sentiment allocator (quadratic-fee-aware sizing with a hedge factor, in `manual/round5/`) predicted ~+65k and the live result was +66.5k — 924th of all teams for that round, within 2% of the model.
+
+If you take one thing from this repo: tune market-making parameters on stable regions and they generalise; a directional bet fitted to three days of designed data is a coin flip with extra steps.
+
 ## What's inside
 
 - **`backtester/`** — local backtester adapted from [jmerle's prosperity backtester](https://github.com/jmerle/imc-prosperity-3-backtester), extended with per-round position limits, trade-matching modes and submission-log parsing
